@@ -208,6 +208,12 @@ def vote(request, election_id):
         )
         return redirect('dashboard')
 
+    # Pass partial-voting state to the template so it can hide
+    # whichever section the voter has already completed, and only
+    # show the section(s) still open to them.
+    already_voted_institutional = institutional_vote
+    already_voted_campus = campus_vote    
+ 
     # Get candidates separately
     institutional_candidates = election.candidates.filter(
         src_category='INSTITUTIONAL'
@@ -228,8 +234,9 @@ def vote(request, election_id):
             'campus_candidate'
         )
 
-        # Both selections are required
-        if not institutional_candidate_id:
+        # A category is only required if this voter hasn't
+        # already cast a ballot in it.
+        if not already_voted_institutional and not institutional_candidate_id:
             messages.error(
                 request,
                 'Please select one Institutional SRC candidate.'
@@ -239,7 +246,7 @@ def vote(request, election_id):
                 election_id=election.id
             )
 
-        if not campus_candidate_id:
+        if not already_voted_campus and not campus_candidate_id:
             messages.error(
                 request,
                 'Please select one Campus SRC candidate.'
@@ -248,46 +255,68 @@ def vote(request, election_id):
                 'vote',
                 election_id=election.id
             )
+        
+        # Only look up a candidate for a category the voter hasn't
+        # already voted in. already_voted_* being True means these
+        # stay None and nothing gets created for that category below.
+        institutional_candidate = None
+        campus_candidate = None
 
-        # Make sure the Institutional candidate
-        # actually belongs to this election and category
-        institutional_candidate = get_object_or_404(
-            Candidate,
-            id=institutional_candidate_id,
-            election=election,
-            src_category='INSTITUTIONAL'
-        )
-
-        # Make sure the Campus candidate
-        # actually belongs to this election and category
-        campus_candidate = get_object_or_404(
-            Candidate,
-            id=campus_candidate_id,
-            election=election,
-            src_category='CAMPUS'
-        )
-
-        # Save both votes together
-        with transaction.atomic():
-
-            Vote.objects.create(
-                voter=request.user,
+        if not already_voted_institutional:
+            # Make sure the Institutional candidate
+            # actually belongs to this election and category
+            institutional_candidate = get_object_or_404(
+                Candidate,
+                id=institutional_candidate_id,
                 election=election,
-                candidate=institutional_candidate,
                 src_category='INSTITUTIONAL'
             )
 
-            Vote.objects.create(
-                voter=request.user,
+        if not already_voted_campus:
+            # Make sure the Campus candidate
+            # actually belongs to this election and category
+            campus_candidate = get_object_or_404(
+                Candidate,
+                id=campus_candidate_id,
                 election=election,
-                candidate=campus_candidate,
                 src_category='CAMPUS'
             )
+        
+        # Save only the vote category/categories that have not
+        # already been completed by this voter.
+        with transaction.atomic():
 
-        messages.success(
-            request,
-            'Your Institutional SRC and Campus SRC votes have been successfully recorded.'
-        )
+            if not already_voted_institutional:
+                Vote.objects.create(
+                    voter=request.user,
+                    election=election,
+                    candidate=institutional_candidate,
+                    src_category='INSTITUTIONAL'
+                )
+
+            if not already_voted_campus:
+                Vote.objects.create(
+                    voter=request.user,
+                    election=election,
+                    candidate=campus_candidate,
+                    src_category='CAMPUS'
+                )
+
+        if already_voted_institutional:
+            messages.success(
+                request,
+                'Your Campus SRC vote has been successfully recorded.'
+            )
+        elif already_voted_campus:
+            messages.success(
+                request,
+                'Your Institutional SRC vote has been successfully recorded.'
+            )
+        else:
+            messages.success(
+                request,
+                'Your Institutional SRC and Campus SRC votes have been successfully recorded.'
+            )
 
         return redirect('dashboard')
 
@@ -299,6 +328,8 @@ def vote(request, election_id):
             'election': election,
             'institutional_candidates': institutional_candidates,
             'campus_candidates': campus_candidates,
+            'already_voted_institutional': already_voted_institutional,
+            'already_voted_campus': already_voted_campus,
         }
     )
 
