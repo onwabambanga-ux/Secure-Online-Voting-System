@@ -8,6 +8,7 @@ from .models import (
     Candidate,
     VoterReceipt,
     Vote,
+    VoterReceipt,
     AuditLog
 )
 
