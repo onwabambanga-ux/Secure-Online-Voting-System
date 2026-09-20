@@ -187,8 +187,12 @@ def vote(request, election_id):
         )
         return redirect('dashboard')
 
-    # Check whether the voter has already completed
-    # both sections of this election
+
+    # ==========================================================
+    # CHECK WHETHER THE VOTER HAS ALREADY COMPLETED
+    # BOTH SECTIONS OF THIS ELECTION
+    # ==========================================================
+
     institutional_vote = VoterReceipt.objects.filter(
         voter=request.user,
         election=election,
@@ -208,16 +212,25 @@ def vote(request, election_id):
         )
         return redirect('dashboard')
 
-    # Get candidates separately
+
+    # ==========================================================
+    # GET CANDIDATES SEPARATELY
+    # ==========================================================
+
     institutional_candidates = election.candidates.filter(
         src_category='INSTITUTIONAL'
     )
 
     campus_candidates = election.candidates.filter(
-        src_category='CAMPUS'
+        src_category='CAMPUS',
+        campus=student_profile.campus
     )
 
-    # Process submitted votes
+
+    # ==========================================================
+    # PROCESS SUBMITTED VOTES
+    # ==========================================================
+
     if request.method == 'POST':
 
         institutional_candidate_id = request.POST.get(
@@ -228,7 +241,11 @@ def vote(request, election_id):
             'campus_candidate'
         )
 
-        # Both selections are required
+
+        # ======================================================
+        # BOTH SELECTIONS ARE REQUIRED
+        # ======================================================
+
         if not institutional_candidate_id:
             messages.error(
                 request,
@@ -249,8 +266,11 @@ def vote(request, election_id):
                 election_id=election.id
             )
 
-        # Make sure the Institutional candidate
-        # actually belongs to this election and category
+
+        # ======================================================
+        # VERIFY INSTITUTIONAL CANDIDATE
+        # ======================================================
+
         institutional_candidate = get_object_or_404(
             Candidate,
             id=institutional_candidate_id,
@@ -258,64 +278,103 @@ def vote(request, election_id):
             src_category='INSTITUTIONAL'
         )
 
-        # Make sure the Campus candidate
-        # actually belongs to this election and category
+
+        # ======================================================
+        # VERIFY CAMPUS CANDIDATE
+        # ======================================================
+
         campus_candidate = get_object_or_404(
             Candidate,
             id=campus_candidate_id,
             election=election,
-            src_category='CAMPUS'
+            src_category='CAMPUS',
+            campus=student_profile.campus
+            
         )
 
-        # Save both voting records together.
+
+        # ======================================================
+        # SAVE BOTH VOTES
+        #
         # VoterReceipt identifies that the student voted.
-        # Vote stores only the anonymous ballot choice.
+        # Vote contains ONLY the anonymous ballot choice.
+        # ======================================================
+
         try:
+
             with transaction.atomic():
 
-                # Institutional SRC receipt
+                # ------------------------------------------------
+                # INSTITUTIONAL RECEIPT
+                # ------------------------------------------------
+
                 VoterReceipt.objects.create(
                     voter=request.user,
                     election=election,
                     src_category='INSTITUTIONAL'
                 )
 
-                # Institutional anonymous ballot
+
+                # ------------------------------------------------
+                # INSTITUTIONAL ANONYMOUS BALLOT
+                # ------------------------------------------------
+
                 Vote.objects.create(
                     election=election,
                     candidate=institutional_candidate,
                     src_category='INSTITUTIONAL'
                 )
 
-                # Campus SRC receipt
+
+                # ------------------------------------------------
+                # CAMPUS RECEIPT
+                # ------------------------------------------------
+
                 VoterReceipt.objects.create(
                     voter=request.user,
                     election=election,
                     src_category='CAMPUS'
                 )
 
-                # Campus anonymous ballot
+
+                # ------------------------------------------------
+                # CAMPUS ANONYMOUS BALLOT
+                # ------------------------------------------------
+
                 Vote.objects.create(
                     election=election,
                     candidate=campus_candidate,
                     src_category='CAMPUS'
                 )
 
+
+                # ------------------------------------------------
+                # AUDIT LOG
+                # ------------------------------------------------
+
                 AuditLog.objects.create(
                     user=request.user,
                     action='VOTE_CAST',
                     description=(
-                        f'Voter cast Institutional and Campus SRC ballots '
-                        f'in election "{election.title}".'
+                        f'Voter cast Institutional and Campus SRC '
+                        f'ballots in election "{election.title}".'
                     )
                 )
 
+
         except IntegrityError:
+
             messages.error(
                 request,
                 'You have already voted in one or both categories for this election.'
             )
+
             return redirect('dashboard')
+
+
+        # ======================================================
+        # SUCCESS MESSAGE
+        # ======================================================
 
         messages.success(
             request,
@@ -324,7 +383,11 @@ def vote(request, election_id):
 
         return redirect('dashboard')
 
-    # Display voting page
+
+    # ==========================================================
+    # DISPLAY VOTING PAGE
+    # ==========================================================
+
     return render(
         request,
         'voting/vote.html',
@@ -614,16 +677,22 @@ def create_election(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
+
         title = request.POST.get('title')
         description = request.POST.get('description')
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         status = request.POST.get('status')
+
         election_type = request.POST.get(
             'election_type',
-            'INSTITUTIONAL'
+            'NORMAL'
         )
-        campus = request.POST.get('campus', '')
+
+        campus = request.POST.get(
+            'campus',
+            ''
+        )
 
         # Create election and candidates together
         with transaction.atomic():
@@ -640,7 +709,10 @@ def create_election(request):
 
             # Get the number of candidates submitted
             candidate_count = int(
-                request.POST.get('candidate_count', 0)
+                request.POST.get(
+                    'candidate_count',
+                    0
+                )
             )
 
             # Create each candidate
@@ -653,9 +725,14 @@ def create_election(request):
                 candidate_type = request.POST.get(
                     f'candidate_type_{i}'
                 )
+
                 candidate_src_category = request.POST.get(
                     f'candidate_src_category_{i}'
-           
+                )
+
+                candidate_campus = request.POST.get(
+                    f'candidate_campus_{i}',
+                    ''
                 )
 
                 candidate_description = request.POST.get(
@@ -675,6 +752,11 @@ def create_election(request):
                         name=candidate_name,
                         candidate_type=candidate_type,
                         src_category=candidate_src_category,
+                        campus=(
+                            candidate_campus
+                            if candidate_src_category == 'CAMPUS'
+                            else None
+                        ),
                         description=candidate_description,
                         image=candidate_image
                     )
@@ -682,7 +764,9 @@ def create_election(request):
             AuditLog.objects.create(
                 user=request.user,
                 action='CREATE_ELECTION',
-                description=f'Created election: {election.title}'
+                description=(
+                    f'Created election: {election.title}'
+                )
             )
 
         messages.success(
@@ -708,16 +792,53 @@ def edit_election(request, election_id):
 
     election = get_object_or_404(Election, id=election_id)
 
+    # Prevent changes to elections that have started
+    if election.status in ['OPEN', 'CLOSED', 'RESULTS']:
+        messages.error(
+            request,
+            'This election can no longer be edited because voting has '
+            'started or the election has already ended.'
+        )
+        return redirect('manage_elections')
+
     if request.method == 'POST':
-        election.title = request.POST.get('title', election.title)
-        election.description = request.POST.get('description', election.description)
-        election.start_date = request.POST.get('start_date', election.start_date)
-        election.end_date = request.POST.get('end_date', election.end_date)
-        election.status = request.POST.get('status', election.status)
-        election.election_type = request.POST.get('election_type', election.election_type)
-        election.campus = request.POST.get('campus', election.campus)
+        election.title = request.POST.get(
+            'title',
+            election.title
+        )
+
+        election.description = request.POST.get(
+            'description',
+            election.description
+        )
+
+        election.start_date = request.POST.get(
+            'start_date',
+            election.start_date
+        )
+
+        election.end_date = request.POST.get(
+            'end_date',
+            election.end_date
+        )
+
+        election.status = request.POST.get(
+            'status',
+            election.status
+        )
+
+        election.election_type = request.POST.get(
+            'election_type',
+            election.election_type
+        )
+
+        election.campus = request.POST.get(
+            'campus',
+            election.campus
+        )
+
         election.save()
-        
+
         AuditLog.objects.create(
             user=request.user,
             action='EDIT_ELECTION',
@@ -747,22 +868,41 @@ def delete_election(request, election_id):
         return redirect('dashboard')
 
     election = get_object_or_404(Election, id=election_id)
-    
+
     if request.method == 'POST':
+
+        # Protect elections that already contain voting history
+        has_votes = Vote.objects.filter(
+            election=election
+        ).exists()
+
+        has_receipts = VoterReceipt.objects.filter(
+            election=election
+        ).exists()
+
+        if has_votes or has_receipts:
+            messages.error(
+                request,
+                'This election cannot be deleted because it contains '
+                'voting records or voter receipts.'
+            )
+            return redirect('manage_elections')
+
         title = election.title
+
         election.delete()
-        
+
         AuditLog.objects.create(
             user=request.user,
             action='DELETE_ELECTION',
             description=f'Deleted election: {title}'
         )
-        
+
         messages.success(
             request,
             f'Election "{title}" has been deleted successfully!'
         )
-        
+
         return redirect('manage_elections')
 
     return render(
@@ -782,41 +922,105 @@ def import_students(request):
 
     if request.method == 'POST':
         form = StudentImportForm(request.POST, request.FILES)
-        
+
         if form.is_valid():
             excel_file = request.FILES['excel_file']
-            
+
             try:
                 df = pd.read_excel(excel_file)
-                
-                required_columns = ['Student Number', 'Full Name', 'Campus', 'Faculty']
-                missing_columns = [col for col in required_columns if col not in df.columns]
-                
+
+                required_columns = [
+                    'Student Number',
+                    'Full Name',
+                    'Campus',
+                    'Faculty'
+                ]
+
+                missing_columns = [
+                    col for col in required_columns
+                    if col not in df.columns
+                ]
+
                 if missing_columns:
                     messages.error(
                         request,
                         f'Missing required columns: {", ".join(missing_columns)}'
                     )
-                    return render(request, 'voting/import_students.html', {'form': form})
-                
+
+                    return render(
+                        request,
+                        'voting/import_students.html',
+                        {'form': form}
+                    )
+
                 success_count = 0
                 error_count = 0
                 errors = []
-                
+
                 for index, row in df.iterrows():
+
                     try:
-                        student_number = str(row['Student Number']).strip()
-                        full_name = str(row['Full Name']).strip()
-                        campus = str(row['Campus']).strip()
-                        faculty = str(row['Faculty']).strip()
-                        
-                        registered = str(row.get('Registered', 'TRUE')).upper() in ['TRUE', 'YES', '1', 'Y']
-                        eligible = str(row.get('Eligible', 'TRUE')).upper() in ['TRUE', 'YES', '1', 'Y']
-                        account_status = str(row.get('Account Status', 'ACTIVE')).upper()
-                        
-                        if account_status not in ['ACTIVE', 'SUSPENDED', 'INACTIVE']:
+                        # ---------------------------------------------
+                        # Read required student information
+                        # ---------------------------------------------
+
+                        student_number = str(
+                            row['Student Number']
+                        ).strip()
+
+                        full_name = str(
+                            row['Full Name']
+                        ).strip()
+
+                        campus = str(
+                            row['Campus']
+                        ).strip()
+
+                        faculty = str(
+                            row['Faculty']
+                        ).strip()
+
+                        # ---------------------------------------------
+                        # Read registration status
+                        # ---------------------------------------------
+
+                        registered = (
+                            str(
+                                row.get('Registered', 'TRUE')
+                            ).upper().strip()
+                            in ['TRUE', 'YES', '1', 'Y']
+                        )
+
+                        # ---------------------------------------------
+                        # Read account status
+                        # ---------------------------------------------
+
+                        account_status = str(
+                            row.get('Account Status', 'ACTIVE')
+                        ).upper().strip()
+
+                        if account_status not in [
+                            'ACTIVE',
+                            'SUSPENDED',
+                            'INACTIVE'
+                        ]:
                             account_status = 'ACTIVE'
-                        
+
+                        # ---------------------------------------------
+                        # Calculate eligibility automatically
+                        #
+                        # Eligible = Registered AND Account Status ACTIVE
+                        # ---------------------------------------------
+
+                        eligible = (
+                            registered
+                            and account_status == 'ACTIVE'
+                        )
+
+                        # ---------------------------------------------
+                        # Create or update student profile
+                        # ---------------------------------------------
+
                         student, created = StudentProfile.objects.update_or_create(
                             student_number=student_number,
                             defaults={
@@ -828,50 +1032,80 @@ def import_students(request):
                                 'account_status': account_status
                             }
                         )
-                        
+
                         success_count += 1
-                            
+
                     except Exception as e:
                         error_count += 1
-                        errors.append(f"Row {index + 2}: {str(e)}")
-                
+
+                        errors.append(
+                            f"Row {index + 2}: {str(e)}"
+                        )
+
+                # ---------------------------------------------
+                # Record import in audit log
+                # ---------------------------------------------
+
                 AuditLog.objects.create(
                     user=request.user,
                     action='IMPORT_STUDENTS',
-                    description=f'Imported {success_count} students, {error_count} errors'
+                    description=(
+                        f'Imported {success_count} students, '
+                        f'{error_count} errors'
+                    )
                 )
-                
+
+                # ---------------------------------------------
+                # Success message
+                # ---------------------------------------------
+
                 if success_count > 0:
                     messages.success(
                         request,
                         f'Successfully imported {success_count} students!'
                     )
-                
+
+                # ---------------------------------------------
+                # Error message
+                # ---------------------------------------------
+
                 if error_count > 0:
                     messages.warning(
                         request,
-                        f'{error_count} rows had errors. Check the logs for details.'
+                        f'{error_count} rows had errors. '
+                        'Check the logs for details.'
                     )
-                
+
+                # ---------------------------------------------
+                # Display first five errors
+                # ---------------------------------------------
+
                 if errors:
                     for error in errors[:5]:
                         messages.error(request, error)
-                
+
                 return redirect('admin_dashboard')
-                
+
             except Exception as e:
                 messages.error(
                     request,
                     f'Error reading file: {str(e)}'
                 )
-                return render(request, 'voting/import_students.html', {'form': form})
-    
+
+                return render(
+                    request,
+                    'voting/import_students.html',
+                    {'form': form}
+                )
+
     else:
         form = StudentImportForm()
-    
-    return render(request, 'voting/import_students.html', {'form': form})
 
-
+    return render(
+        request,
+        'voting/import_students.html',
+        {'form': form}
+    )
 @login_required(login_url='login')
 def view_audit_logs(request):
     if not request.user.is_authenticated:
@@ -1735,3 +1969,78 @@ def export_results_pdf(request):
     pdf.save()
 
     return response
+@login_required(login_url='login')
+def manage_voters(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+
+    voters = StudentProfile.objects.all().order_by('student_number')
+
+    return render(
+        request,
+        'voting/manage_voters.html',
+        {
+            'voters': voters,
+        }
+    )
+
+
+@login_required(login_url='login')
+def clear_voters(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+
+    if request.method != 'POST':
+        return redirect('manage_voters')
+
+    # Update election statuses before checking
+    elections = Election.objects.all()
+
+    for election in elections:
+        election.update_status()
+
+    # Do not allow clearing voters while an election
+    # is scheduled or currently open
+    active_elections = Election.objects.filter(
+        status__in=['SCHEDULED', 'OPEN']
+    )
+
+    if active_elections.exists():
+
+        election_names = ', '.join(
+            election.title for election in active_elections
+        )
+
+        return render(
+            request,
+            'voting/manage_voters.html',
+            {
+                'voters': StudentProfile.objects.all().order_by(
+                    'student_number'
+                ),
+                'error': (
+                    'The voter list cannot be cleared because the '
+                    'following election(s) are scheduled or currently '
+                    f'open: {election_names}.'
+                ),
+            }
+        )
+
+    # Delete StudentProfile records only.
+    #
+    # User accounts are NOT deleted.
+    # Votes are NOT deleted.
+    # Voter receipts are NOT deleted.
+    # Audit logs are NOT deleted.
+    StudentProfile.objects.all().delete()
+
+    return render(
+        request,
+        'voting/manage_voters.html',
+        {
+            'voters': StudentProfile.objects.all().order_by(
+                'student_number'
+            ),
+            'success': 'The voter list has been cleared successfully.',
+        }
+    )

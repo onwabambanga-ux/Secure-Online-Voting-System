@@ -283,12 +283,8 @@
                         name="election_type"
                         required
                     >
-                        <option value="INSTITUTIONAL">
-                            Institutional SRC
-                        </option>
-
-                        <option value="CAMPUS">
-                            Campus SRC
+                        <option value="NORMAL">
+                            Normal Election
                         </option>
 
                         <option value="RUNOFF">
@@ -465,6 +461,7 @@
                 <select
                     name="candidate_src_category_${candidateNumber}"
                     required
+                    onchange="toggleCandidateCampus(${candidateNumber}, this.value)"
                 >
 
                     <option value="INSTITUTIONAL">
@@ -477,6 +474,27 @@
 
                 </select>
 
+            </div>
+
+            <!-- CANDIDATE CAMPUS -->
+
+            <div
+                class="form-group"
+                id="candidate-campus-group-${candidateNumber}"
+                style="display: none;"
+            >
+                <label>
+                    Campus
+                </label>
+
+                <select
+                    name="candidate_campus_${candidateNumber}"
+                    id="candidate-campus-${candidateNumber}"
+                >
+                    <option value="" disabled selected>Select Campus</option>
+                    <option value="Alice Campus">Alice Campus</option>
+                    <option value="East London Campus">East London Campus</option>
+                </select>
             </div>
 
 
@@ -570,6 +588,31 @@
     }
 
 
+    function toggleCandidateCampus(number, category) {
+
+        const campusGroup = document.getElementById(
+            `candidate-campus-group-${number}`
+        );
+
+        const campusInput = document.getElementById(
+            `candidate-campus-${number}`
+        );
+
+        if (category === 'CAMPUS') {
+
+            campusGroup.style.display = 'block';
+            campusInput.required = true;
+
+        } else {
+
+            campusGroup.style.display = 'none';
+            campusInput.required = false;
+            campusInput.value = '';
+
+        }
+    }
+
+
     function removeCandidate(number) {
 
         const candidate =
@@ -600,6 +643,10 @@
 
     // Start with one candidate automatically
     addCandidate();
+
+    // The first candidate defaults to Institutional SRC,
+    // so its campus field remains hidden.
+
 
 </script>
 

@@ -146,9 +146,8 @@
                 <div class="form-group">
                     <label for="election_type">Election Type</label>
                     <select id="election_type" name="election_type" required>
-                        <option value="INSTITUTIONAL" {% if election.election_type == 'INSTITUTIONAL' %}selected{% endif %}>Institutional SRC</option>
-                        <option value="CAMPUS" {% if election.election_type == 'CAMPUS' %}selected{% endif %}>Campus SRC</option>
-                        <option value="RUNOFF" {% if election.election_type == 'RUNOFF' %}selected{% endif %}>Runoff</option>
+                      <option value="NORMAL" {% if election.election_type == 'NORMAL' %}selected{% endif %}>Normal Election</option>
+                      <option value="RUNOFF" {% if election.election_type == 'RUNOFF' %}selected{% endif %}>Runoff</option>
                     </select>
                 </div>
                 <div class="form-group">

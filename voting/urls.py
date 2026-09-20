@@ -20,6 +20,8 @@ urlpatterns = [
     # Admin URLs
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-dashboard/elections/', views.manage_elections, name='manage_elections'),
+    path('admin-dashboard/voters/', views.manage_voters, name='manage_voters'),
+    path('admin-dashboard/voters/clear/',views.clear_voters,name='clear_voters'),
     path('admin-dashboard/elections/create/', views.create_election, name='create_election'),
     path('admin-dashboard/elections/<int:election_id>/edit/', views.edit_election, name='edit_election'),
     path('admin-dashboard/elections/<int:election_id>/delete/', views.delete_election, name='delete_election'),

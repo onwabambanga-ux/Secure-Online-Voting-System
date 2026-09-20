@@ -65,8 +65,8 @@ class Election(models.Model):
     ]
 
     ELECTION_TYPE_CHOICES = [
-        ('INSTITUTIONAL', 'Institutional SRC'),
-        ('CAMPUS', 'Campus SRC'),
+         ('NORMAL', 'Normal Election'),
+
         ('RUNOFF', 'Runoff'),
     ]
 
@@ -79,7 +79,7 @@ class Election(models.Model):
     election_type = models.CharField(
         max_length=20,
         choices=ELECTION_TYPE_CHOICES,
-        default='INSTITUTIONAL'
+        default='NORMAL'
     )
 
     campus = models.CharField(
@@ -144,6 +144,12 @@ class Candidate(models.Model):
         max_length=20,
         choices=SRC_CATEGORY_CHOICES,
         default='INSTITUTIONAL'
+    )
+
+    campus = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
     )
 
     candidate_type = models.CharField(
