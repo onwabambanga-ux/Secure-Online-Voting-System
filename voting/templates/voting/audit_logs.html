@@ -1,428 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audit Logs</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background: #f4f6f8;
-            color: #1f2937;
-        }
-        .navbar {
-            background: #172554;
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-            font-size: 24px;
-        }
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-        }
-        .back-link {
-            background: #444;
-        }
-        .back-link:hover {
-            background: #666;
-        }
-        .logout {
-            background: #dc2626;
-        }
-        .logout:hover {
-            background: #b91c1c;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .page-header {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .page-header h2 {
-            font-size: 28px;
-            color: #172554;
-        }
-        .page-header p {
-            color: #6b7280;
-            margin-top: 5px;
-        }
-        .filter-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        .filter-form {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .filter-group label {
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .filter-group select,
-        .filter-group input {
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            min-width: 180px;
-        }
-        .filter-button {
-            padding: 10px 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            align-self: flex-end;
-        }
-        .filter-button:hover {
-            background: #1d4ed8;
-        }
-        .reset-button {
-            padding: 10px 20px;
-            background: #6b7280;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-            align-self: flex-end;
-        }
-        .reset-button:hover {
-            background: #4b5563;
-        }
-        .logs-table-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        .logs-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .logs-table thead {
-            background: #f9fafb;
-        }
-        .logs-table th {
-            padding: 15px;
-            text-align: left;
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #e5e7eb;
-            white-space: nowrap;
-        }
-        .logs-table td {
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 14px;
-            vertical-align: middle;
-        }
-        .logs-table tr:hover {
-            background: #f9fafb;
-        }
-        .logs-table tr:last-child td {
-            border-bottom: none;
-        }
-        .action-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .badge-login {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .badge-logout {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        .badge-vote {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .badge-register {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        .badge-create-election {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .badge-edit-election {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-        .badge-delete-election {
-            background: #fecaca;
-            color: #991b1b;
-        }
-        .badge-import-students {
-            background: #cffafe;
-            color: #155e75;
-        }
-        .badge-default {
-            background: #f3f4f6;
-            color: #374151;
-        }
-        .user-cell {
-            font-weight: bold;
-            color: #222;
-        }
-        .timestamp-cell {
-            color: #6b7280;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        .description-cell {
-            color: #4b5563;
-            max-width: 400px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .no-logs {
-            padding: 40px;
-            text-align: center;
-            color: #6b7280;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-        }
-        .pagination a {
-            padding: 8px 16px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #222;
-            font-weight: bold;
-        }
-        .pagination a:hover {
-            background: #e5e7eb;
-        }
-        .pagination .current {
-            font-size: 14px;
-            color: #6b7280;
-        }
-        .messages {
-            margin-bottom: 20px;
-        }
-        .message {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-        .message-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-        .message-error {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-        .message-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-        @media (max-width: 700px) {
-            .navbar {
-                padding: 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .container {
-                padding: 10px;
-            }
-            .filter-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-group select,
-            .filter-group input {
-                width: 100%;
-            }
-            .logs-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Audit Logs | Secure Online Voting System</title>
 </head>
-<body>
-    <div class="navbar">
-        <h1>🗳️ Secure Online Voting System</h1>
-        <div class="navbar-right">
-            <a href="{% url 'admin_dashboard' %}" class="back-link">← Admin Dashboard</a>
-            <a href="{% url 'logout' %}" class="logout">Logout</a>
-        </div>
+
+<body class="audit-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar audit-navbar">
+    <a class="brand" href="{% url 'admin_dashboard' %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Secure Online Voting</span>
+    </a>
+
+    <nav class="navbar-right" aria-label="Dashboard navigation">
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container audit-container">
+    {% if messages %}
+    <div class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message message-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
     </div>
-    <div class="container">
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="message message-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <div class="page-header">
-            <div>
-                <h2>📋 Audit Logs</h2>
-                <p>View all system activity and user actions</p>
-            </div>
-            <div style="font-size: 14px; color: #6b7280;">
-                Total Logs: <strong>{{ audit_logs|length }}</strong>
-            </div>
+    {% endif %}
+
+    <section class="page-header audit-header">
+      <div>
+        <p class="eyebrow">System oversight</p>
+        <h1>Audit Logs</h1>
+        <p>Review system activity and user actions in one place.</p>
+      </div>
+      <div class="log-count">
+        <span>Total logs</span>
+        <strong>{{ audit_logs|length }}</strong>
+      </div>
+    </section>
+
+    <section class="filter-section glass-card" aria-labelledby="filter-title">
+      <div class="section-heading">
+        <div class="section-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M4 6h16M7 12h10M10 18h4"></path>
+          </svg>
         </div>
-        
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <form method="GET" class="filter-form">
-                <div class="filter-group">
-                    <label for="action">Action Type</label>
-                    <select id="action" name="action">
-                        <option value="">All Actions</option>
-                        {% for action in unique_actions %}
-                            <option value="{{ action }}" {% if action_filter == action %}selected{% endif %}>
-                                {{ action|title }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="user">User</label>
-                    <input type="text" id="user" name="user" value="{{ user_filter }}" placeholder="Search username...">
-                </div>
-                <button type="submit" class="filter-button">Filter</button>
-                <a href="{% url 'view_audit_logs' %}" class="reset-button">Reset</a>
-            </form>
+        <div>
+          <h2 id="filter-title">Filter activity</h2>
+          <p>Find a specific action or user.</p>
         </div>
-        
-        <!-- Logs Table -->
-        <div class="logs-table-container">
-            {% if audit_logs %}
-                <table class="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Action</th>
-                            <th>User</th>
-                            <th>Description</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in audit_logs %}
-                            <tr>
-                                <td>
-                                    {% if log.action == 'LOGIN' %}
-                                        <span class="action-badge badge-login">🔐 Login</span>
-                                    {% elif log.action == 'LOGOUT' %}
-                                        <span class="action-badge badge-logout">🚪 Logout</span>
-                                    {% elif log.action == 'VOTE' %}
-                                        <span class="action-badge badge-vote">🗳️ Vote</span>
-                                    {% elif log.action == 'REGISTER' %}
-                                        <span class="action-badge badge-register">📝 Register</span>
-                                    {% elif log.action == 'CREATE_ELECTION' %}
-                                        <span class="action-badge badge-create-election">➕ Create Election</span>
-                                    {% elif log.action == 'EDIT_ELECTION' %}
-                                        <span class="action-badge badge-edit-election">✏️ Edit Election</span>
-                                    {% elif log.action == 'DELETE_ELECTION' %}
-                                        <span class="action-badge badge-delete-election">🗑️ Delete Election</span>
-                                    {% elif log.action == 'IMPORT_STUDENTS' %}
-                                        <span class="action-badge badge-import-students">📥 Import Students</span>
-                                    {% else %}
-                                        <span class="action-badge badge-default">{{ log.action }}</span>
-                                    {% endif %}
-                                </td>
-                                <td class="user-cell">
-                                    {% if log.user %}
-                                        {{ log.user.username }}
-                                    {% else %}
-                                        <span style="color: #9ca3af;">System</span>
-                                    {% endif %}
-                                </td>
-                                <td class="description-cell" title="{{ log.description }}">
-                                    {{ log.description }}
-                                </td>
-                                <td class="timestamp-cell">
-                                    {{ log.timestamp }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <div class="no-logs">
-                    <h3>No audit logs found</h3>
-                    <p>There are no logs matching your criteria.</p>
-                </div>
-            {% endif %}
+      </div>
+
+      <form method="GET" class="filter-form">
+        <div class="filter-group">
+          <label for="action">Action type</label>
+          <select id="action" name="action">
+            <option value="">All Actions</option>
+            {% for action in unique_actions %}
+            <option value="{{ action }}" {% if action_filter == action %}selected{% endif %}>
+              {{ action|title }}
+            </option>
+            {% endfor %}
+          </select>
         </div>
-    </div>
+
+        <div class="filter-group">
+          <label for="user">User</label>
+          <input type="text" id="user" name="user" value="{{ user_filter }}" placeholder="Search username...">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="filter-button">Apply filters</button>
+          <a href="{% url 'view_audit_logs' %}" class="reset-button">Reset</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="logs-table-container glass-card" aria-labelledby="logs-title">
+      <div class="table-heading">
+        <div>
+          <p class="eyebrow">Activity history</p>
+          <h2 id="logs-title">Recent system events</h2>
+        </div>
+        <span class="table-status">Live records</span>
+      </div>
+
+      {% if audit_logs %}
+      <div class="table-scroll">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th scope="col">Action</th>
+              <th scope="col">User</th>
+              <th scope="col">Description</th>
+              <th scope="col">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in audit_logs %}
+            <tr>
+              <td>
+                {% if log.action == 'LOGIN' %}
+                <span class="action-badge badge-login">Login</span>
+                {% elif log.action == 'LOGOUT' %}
+                <span class="action-badge badge-logout">Logout</span>
+                {% elif log.action == 'VOTE' %}
+                <span class="action-badge badge-vote">Vote</span>
+                {% elif log.action == 'REGISTER' %}
+                <span class="action-badge badge-register">Register</span>
+                {% elif log.action == 'CREATE_ELECTION' %}
+                <span class="action-badge badge-create-election">Create Election</span>
+                {% elif log.action == 'EDIT_ELECTION' %}
+                <span class="action-badge badge-edit-election">Edit Election</span>
+                {% elif log.action == 'DELETE_ELECTION' %}
+                <span class="action-badge badge-delete-election">Delete Election</span>
+                {% elif log.action == 'IMPORT_STUDENTS' %}
+                <span class="action-badge badge-import-students">Import Students</span>
+                {% else %}
+                <span class="action-badge badge-default">{{ log.action }}</span>
+                {% endif %}
+              </td>
+              <td class="user-cell">
+                {% if log.user %}
+                {{ log.user.username }}
+                {% else %}
+                <span class="system-user">System</span>
+                {% endif %}
+              </td>
+              <td class="description-cell" title="{{ log.description }}">
+                {{ log.description }}
+              </td>
+              <td class="timestamp-cell">
+                {{ log.timestamp }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="no-logs">
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"></path>
+          </svg>
+        </div>
+        <h3>No audit logs found</h3>
+        <p>There are no logs matching your criteria.</p>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 </body>
+
 </html>

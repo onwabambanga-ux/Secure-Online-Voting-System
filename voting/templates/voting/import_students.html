@@ -1,223 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Import Students</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background: #f4f6f8;
-            color: #1f2937;
-        }
-        .navbar {
-            background: #172554;
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-            font-size: 24px;
-        }
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-        }
-        .back-link {
-            background: #444;
-        }
-        .back-link:hover {
-            background: #666;
-        }
-        .logout {
-            background: #dc2626;
-        }
-        .logout:hover {
-            background: #b91c1c;
-        }
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .form-card {
-            background: white;
-            padding: 35px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        h2 {
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #6b7280;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px dashed #d1d5db;
-            border-radius: 6px;
-            font-size: 15px;
-            background: #f9fafb;
-            cursor: pointer;
-        }
-        .help-text {
-            color: #6b7280;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-        .button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .submit-button {
-            background: #16a34a;
-            color: white;
-        }
-        .submit-button:hover {
-            background: #15803d;
-        }
-        .cancel-button {
-            background: #6b7280;
-            color: white;
-        }
-        .cancel-button:hover {
-            background: #4b5563;
-        }
-        .messages {
-            margin-bottom: 20px;
-        }
-        .message {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-        .message-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-        .message-error {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-        .message-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-        .template-info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .template-info h3 {
-            margin-bottom: 10px;
-            color: #1e40af;
-        }
-        .template-info ol {
-            margin-left: 20px;
-            color: #1e40af;
-            line-height: 1.8;
-        }
-        .template-info code {
-            background: #dbeafe;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        @media (max-width: 700px) {
-            .navbar {
-                padding: 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .container {
-                padding: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Import Students | Secure Online Voting System</title>
 </head>
-<body>
-    <div class="navbar">
-        <h1>Secure Online Voting System</h1>
-        <div class="navbar-right">
-            <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
-            <a href="{% url 'logout' %}" class="logout">Logout</a>
+
+<body class="import-students-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar import-students-navbar">
+    <a class="brand" href="{% url 'admin_dashboard' %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Secure Online Voting</span>
+    </a>
+
+    <nav class="navbar-right" aria-label="Import navigation">
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container import-students-container">
+    {% if messages %}
+    <section class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message message-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="form-card" aria-labelledby="import-students-title">
+      <div class="form-intro">
+        <span class="title-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M12 16V4"></path>
+            <path d="m7 9 5-5 5 5"></path>
+            <path d="M5 14v5h14v-5"></path>
+          </svg>
+        </span>
+        <div>
+          <p class="eyebrow">Student administration</p>
+          <h1 id="import-students-title">Import Students</h1>
+          <p class="subtitle">Upload an Excel file with student details to import them into the system.</p>
         </div>
-    </div>
-    <div class="container">
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="message message-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <div class="form-card">
-            <h2>Import Students</h2>
-            <p class="subtitle">Upload an Excel file with student details to import them into the system.</p>
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_excel_file">Select Excel File</label>
-                    <input type="file" id="id_excel_file" name="excel_file" accept=".xlsx,.xls" required>
-                    <p class="help-text">Supported formats: .xlsx, .xls</p>
-                </div>
-                <div class="buttons">
-                    <button type="submit" class="button submit-button">Import Students</button>
-                    <a href="{% url 'admin_dashboard' %}" class="button cancel-button">Cancel</a>
-                </div>
-            </form>
-            <div class="template-info">
-                <h3>Excel File Requirements</h3>
-                <ol>
-                    <li>File must be in <code>.xlsx</code> format</li>
-                    <li>First row must contain column headers</li>
-                    <li>Required columns: <code>Student Number</code>, <code>Full Name</code>, <code>Campus</code>, <code>Faculty</code></li>
-                    <li>Optional columns: <code>Registered</code>, <code>Eligible</code>, <code>Account Status</code></li>
-                    <li>For <code>Registered</code> and <code>Eligible</code>, use <code>TRUE</code> or <code>FALSE</code></li>
-                    <li>For <code>Account Status</code>, use <code>ACTIVE</code>, <code>SUSPENDED</code>, or <code>INACTIVE</code></li>
-                </ol>
-            </div>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="id_excel_file">Select Excel File</label>
+          <input type="file" id="id_excel_file" name="excel_file" accept=".xlsx,.xls" required>
+          <p class="help-text">Supported formats: .xlsx, .xls</p>
         </div>
-    </div>
+
+        <div class="buttons">
+          <button type="submit" class="button submit-button">Import Students</button>
+          <a href="{% url 'admin_dashboard' %}" class="button cancel-button">Cancel</a>
+        </div>
+      </form>
+
+      <aside class="template-info" aria-labelledby="requirements-title">
+        <div class="info-heading">
+          <span class="info-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M4 5h16v14H4z"></path>
+              <path d="M8 9h8M8 13h8M8 17h5"></path>
+            </svg>
+          </span>
+          <h2 id="requirements-title">Excel File Requirements</h2>
+        </div>
+        <ol>
+          <li>File must be in <code>.xlsx</code> format</li>
+          <li>First row must contain column headers</li>
+          <li>Required columns: <code>Student Number</code>, <code>Full Name</code>, <code>Campus</code>, <code>Faculty</code></li>
+          <li>Optional columns: <code>Registered</code>, <code>Eligible</code>, <code>Account Status</code></li>
+          <li>For <code>Registered</code> and <code>Eligible</code>, use <code>TRUE</code> or <code>FALSE</code></li>
+          <li>For <code>Account Status</code>, use <code>ACTIVE</code>, <code>SUSPENDED</code>, or <code>INACTIVE</code></li>
+        </ol>
+      </aside>
+    </section>
+  </main>
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 </body>
+
 </html>

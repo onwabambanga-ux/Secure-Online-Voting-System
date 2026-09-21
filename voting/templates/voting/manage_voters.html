@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Manage Voters | Secure Online Voting System</title>
+</head>
+
+<body class="manage-voters-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar manage-voters-navbar">
+    <a class="brand" href="{% url 'admin_dashboard' %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Secure Online Voting</span>
+    </a>
+
+    <nav class="navbar-right" aria-label="Voter management navigation">
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container voters-container">
+    <section class="page-header voters-header" aria-labelledby="voters-title">
+      <div>
+        <p class="eyebrow">Student administration</p>
+        <h1 id="voters-title">Manage Voters</h1>
+        <p>View and manage students registered in the voting system.</p>
+      </div>
+      <div class="header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="img" focusable="false">
+          <circle cx="9" cy="8" r="3"></circle>
+          <path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M16 7a3 3 0 0 1 0 6M16 14c2.6.2 4.1 1.8 4.5 5"></path>
+        </svg>
+      </div>
+    </section>
+
+    {% if error %}
+    <div class="message message-error" role="alert">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="message message-success" role="status">
+      {{ success }}
+    </div>
+    {% endif %}
+
+    <section class="voter-actions" aria-label="Voter actions">
+      <div class="clear-action">
+        <form method="POST" action="{% url 'clear_voters' %}" onsubmit="return confirm('Are you sure you want to clear the voter list? This will remove the StudentProfile voter records but will preserve voting history.');">
+          {% csrf_token %}
+          <button type="submit" class="clear-button">Clear Voter List</button>
+        </form>
+        <p class="clear-warning">
+          <span class="hint-icon" aria-hidden="true">i</span>
+          <span>Clearing is blocked while an election is scheduled or open.</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Voter statistics">
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-primary" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <circle cx="9" cy="8" r="3"></circle>
+            <path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M16 7a3 3 0 0 1 0 6M16 14c2.6.2 4.1 1.8 4.5 5"></path>
+          </svg>
+        </span>
+        <div>
+          <h2>Total Voters</h2>
+          <strong id="totalVoters">{{ voters|length }}</strong>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-success" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M12 3 5 6v5c0 4.6 2.9 8.2 7 10 4.1-1.8 7-5.4 7-10V6l-7-3Z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </span>
+        <div>
+          <h2>Eligible Voters</h2>
+          <strong id="eligibleVoters">{{ voters|length }}</strong>
+        </div>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-warning" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M4 19V5M4 19h17"></path>
+            <path d="m7 15 4-4 3 2 5-6"></path>
+          </svg>
+        </span>
+        <div>
+          <h2>Displayed Results</h2>
+          <strong id="displayedVoters">{{ voters|length }}</strong>
+        </div>
+      </article>
+    </section>
+
+    <section class="table-card" aria-labelledby="voter-list-title">
+      <div class="table-header">
+        <div>
+          <p class="eyebrow">Directory</p>
+          <h2 id="voter-list-title">Student Voter List</h2>
+        </div>
+        <label class="search-wrapper" for="searchInput">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <circle cx="10.8" cy="10.8" r="6.8"></circle>
+              <path d="m16 16 5 5"></path>
+            </svg>
+          </span>
+          <input type="text" id="searchInput" class="search-box" placeholder="Search student number, name, campus or faculty...">
+        </label>
+      </div>
+
+      <div class="table-scroll">
+        <table id="votersTable">
+          <thead>
+            <tr>
+              <th scope="col">Student Number</th>
+              <th scope="col">Full Name</th>
+              <th scope="col">Campus</th>
+              <th scope="col">Faculty</th>
+              <th scope="col">Registered</th>
+              <th scope="col">Eligible</th>
+              <th scope="col">Account Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for voter in voters %}
+            <tr class="voter-row">
+              <td>{{ voter.student_number }}</td>
+              <td class="name-cell">{{ voter.full_name }}</td>
+              <td>{{ voter.campus }}</td>
+              <td>{{ voter.faculty }}</td>
+              <td>
+                {% if voter.registered %}
+                <span class="status status-yes">Yes</span>
+                {% else %}
+                <span class="status status-no">No</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if voter.eligible %}
+                <span class="status status-yes">Yes</span>
+                {% else %}
+                <span class="status status-no">No</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if voter.account_status == 'ACTIVE' %}
+                <span class="status status-active">Active</span>
+                {% elif voter.account_status == 'SUSPENDED' %}
+                <span class="status status-suspended">Suspended</span>
+                {% else %}
+                <span class="status status-inactive">Inactive</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="empty-message">
+                <span class="empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img" focusable="false">
+                    <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+                  </svg>
+                </span>
+                <strong>No voters found.</strong>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const voterRows = document.querySelectorAll('.voter-row');
+    const displayedVoters = document.getElementById('displayedVoters');
+
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      voterRows.forEach(function(row) {
+        const rowText = row.textContent.toLowerCase();
+        const isVisible = rowText.includes(searchTerm);
+
+        row.style.display = isVisible ? '' : 'none';
+
+        if (isVisible) {
+          visibleCount++;
+        }
+      });
+
+      displayedVoters.textContent = visibleCount;
+    });
+
+  </script>
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+</body>
+
+</html>

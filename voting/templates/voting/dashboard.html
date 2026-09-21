@@ -2,377 +2,187 @@
 <html lang="en">
 
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Student Dashboard - Live SRC Voting System</title>
-
-    <style>
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f4f6f8;
-        }
-
-        .navbar {
-            background-color: #222;
-            color: white;
-            padding: 18px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar h2 {
-            margin: 0;
-        }
-
-        .logout {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border: 1px solid white;
-            border-radius: 5px;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 35px auto;
-        }
-
-        .welcome {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .welcome h1 {
-            margin-top: 0;
-        }
-
-        .navigation {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-
-        .nav-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            text-decoration: none;
-            color: #222;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .nav-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .nav-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .nav-card h3 {
-            margin: 10px 0;
-        }
-
-        .nav-card p {
-            color: #666;
-        }
-
-        .election {
-            background: white;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .election h2 {
-            margin-top: 0;
-        }
-
-        .status {
-            font-weight: bold;
-        }
-
-        .vote-button {
-            display: inline-block;
-            padding: 12px 25px;
-            background-color: #222;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .completed {
-            color: green;
-            font-weight: bold;
-        }
-
-        .unavailable {
-            color: #777;
-            font-weight: bold;
-        }
-
-        .message {
-            background-color: #eeeeee;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-        }
-
-        @media (max-width: 700px) {
-
-            .navigation {
-                grid-template-columns: 1fr;
-            }
-
-        }
-
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Student Dashboard | Live SRC Voting System</title>
 </head>
 
+<body class="student-dashboard-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
 
-<body>
-
-
-<div class="navbar">
-
-    <h2>
-        Live SRC Voting System
-    </h2>
-
-    <a
-        href="{% url 'logout' %}"
-        class="logout"
-    >
-        Logout
-    </a>
-
-</div>
-
-
-<div class="container">
-
-
-    <div class="welcome">
-
-        <h1>
-            Student Dashboard
-        </h1>
-
+  <main class="admin-dashboard-container student-dashboard-container">
+    <section class="admin-welcome" aria-labelledby="student-dashboard-title">
+      <div>
+        <p class="eyebrow">Student portal</p>
+        <h1 id="student-dashboard-title">Student Dashboard</h1>
         <p>
-            Welcome, {{ request.user.username }}.
+          Welcome, {{ request.user.username }}. Participate in elections, view results, and manage your student profile.
         </p>
-
-        <p>
-            Use the options below to participate in the SRC elections.
-        </p>
-
-    </div>
-
-
-    <!-- MAIN NAVIGATION -->
-
-    <div class="navigation">
-
-
-        <!-- VOTE -->
-
-        <a
-            href="#elections"
-            class="nav-card"
-        >
-
-            <div class="nav-icon">
-                🗳️
-            </div>
-
-            <h3>
-                Vote
-            </h3>
-
-            <p>
-                View available elections and cast your vote.
-            </p>
-
-        </a>
-
-
-        <!-- RESULTS -->
-
-        <a
-            href="{% url 'results' %}"
-            class="nav-card"
-        >
-
-            <div class="nav-icon">
-                📊
-            </div>
-
-            <h3>
-                View Results
-            </h3>
-
-            <p>
-                View live SRC election results.
-            </p>
-
-        </a>
-
-
-        <!-- PROFILE -->
-
-        <a
-            href="{% url 'profile' %}"
-            class="nav-card"
-        >
-
-            <div class="nav-icon">
-                👤
-            </div>
-
-            <h3>
-                My Profile
-            </h3>
-
-            <p>
-                View your student information.
-            </p>
-
-        </a>
-
-    </div>
+      </div>
+    </section>
 
     {% if messages %}
-
-        {% for message in messages %}
-
-            <div class="message">
-                {{ message }}
-            </div>
-
-        {% endfor %}
-
+    <section class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message message-{{ message.tags }}">
+        <span class="message-mark" aria-hidden="true">✓</span>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+    </section>
     {% endif %}
 
+    <section class="admin-summary-cards student-summary-cards" aria-label="Student summary">
+      <article class="admin-card">
+        <span class="admin-card-icon" aria-hidden="true">🗳️</span>
+        <h2>Available Elections</h2>
+        <strong class="admin-card-number">{{ elections|length }}</strong>
+      </article>
 
-    <!-- ELECTIONS -->
+      <article class="admin-card">
+        <span class="admin-card-icon" aria-hidden="true">📊</span>
+        <h2>Election Results</h2>
+        <strong class="admin-card-number">Live</strong>
+      </article>
 
-    <div id="elections">
+      <article class="admin-card">
+        <span class="admin-card-icon" aria-hidden="true">👤</span>
+        <h2>My Profile</h2>
+        <strong class="admin-card-number">View</strong>
+      </article>
+    </section>
 
-        <h2>
-            Elections
-        </h2>
+    <section class="admin-statistics student-statistics" aria-labelledby="student-statistics-title">
+      <h2 id="student-statistics-title">📊 Voting Statistics</h2>
 
+      <div class="admin-statistics-grid">
+        <article class="admin-stat-box">
+          <h3>Elections Available</h3>
+          <strong class="admin-stat-number">{{ elections|length }}</strong>
+        </article>
 
-        {% if elections %}
+        <article class="admin-stat-box">
+          <h3>Elections You Can Vote In</h3>
+          <strong class="admin-stat-number">{{ elections|length }}</strong>
+        </article>
 
-            {% for election in elections %}
+        <article class="admin-stat-box">
+          <h3>Results Availability</h3>
+          <strong class="admin-stat-number">Live</strong>
+        </article>
+      </div>
 
-                <div class="election">
+      <div class="admin-progress student-progress">
+        <div class="admin-progress-label">
+          <span>Ready to participate</span>
+          <span>100%</span>
+        </div>
+        <div class="admin-progress-background" aria-label="Ready to participate">
+          <div class="admin-progress-bar student-progress-bar"></div>
+        </div>
+      </div>
+    </section>
 
-                    <h2>
-                        {{ election.title }}
-                    </h2>
+    <section class="admin-management student-management" aria-labelledby="student-services-title">
+      <h2 id="student-services-title">Student Services</h2>
 
-                    <p>
-                        {{ election.description }}
-                    </p>
+      <div class="admin-management-buttons">
+        <a href="#elections" class="admin-management-button">
+          Vote in an Election
+        </a>
+        <a href="{% url 'results' %}" class="admin-management-button info">
+          View Results
+        </a>
+        <a href="{% url 'profile' %}" class="admin-management-button success">
+          My Profile
+        </a>
+      </div>
+    </section>
 
-                    <p>
-                        <strong>
-                            Election Type:
-                        </strong>
+    <section id="elections" class="elections-section student-elections" aria-labelledby="elections-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Participate</p>
+          <h2 id="elections-title">Available Elections</h2>
+        </div>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
 
-                        {{ election.get_election_type_display }}
-                    </p>
+      {% if elections %}
+      <div class="election-list">
+        {% for election in elections %}
+        <article class="election">
+          <div class="election-topline">
+            <div>
+              <p class="election-label">SRC election</p>
+              <h3>{{ election.title }}</h3>
+            </div>
+            <span class="status status-{{ election.status|lower }}">{{ election.get_status_display }}</span>
+          </div>
 
+          <p class="election-description">{{ election.description }}</p>
 
-                    {% if election.campus %}
+          <div class="election-details">
+            <span>
+              <strong>Election type</strong>
+              {{ election.get_election_type_display }}
+            </span>
+            {% if election.campus %}
+            <span>
+              <strong>Campus</strong>
+              {{ election.campus }}
+            </span>
+            {% endif %}
+            <span>
+              <strong>Voting period</strong>
+              {{ election.start_date }} – {{ election.end_date }}
+            </span>
+          </div>
 
-                        <p>
-                            <strong>
-                                Campus:
-                            </strong>
+          <div class="election-action">
+            {% if election.id in voted_election_ids %}
+            <p class="completed"><span aria-hidden="true">✓</span> You have already voted in this election.</p>
+            {% elif election.status == 'OPEN' %}
+            <a href="{% url 'vote' election.pk %}" class="vote-button">
+              Vote Now
+              <span aria-hidden="true">→</span>
+            </a>
+            {% else %}
+            <p class="unavailable">Voting is not currently available.</p>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+          </svg>
+        </div>
+        <h3>No elections available</h3>
+        <p>There are currently no elections available.</p>
+      </div>
+      {% endif %}
+    </section>
+  </main>
 
-                            {{ election.campus }}
-                        </p>
+  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const progressBar = document.querySelector('.student-progress-bar');
 
-                    {% endif %}
+      if (progressBar) {
+        progressBar.style.width = '100%';
+      }
+    });
 
-
-                    <p>
-
-                        <strong>
-                            Status:
-                        </strong>
-
-                        <span class="status">
-                            {{ election.get_status_display }}
-                        </span>
-
-                    </p>
-
-
-                    {% if election.id in voted_election_ids %}
-
-                        <p class="completed">
-                            ✓ You have already voted in this election.
-                        </p>
-
-
-                    {% elif election.status == 'OPEN' %}
-
-                        <a
-                            href="{% url 'vote' election.pk %}"
-                            class="vote-button"
-                        >
-                            Vote Now
-                        </a>
-
-
-                    {% else %}
-
-                        <p class="unavailable">
-                            Voting is not currently available.
-                        </p>
-
-                    {% endif %}
-
-                </div>
-
-            {% endfor %}
-
-
-        {% else %}
-
-            <p>
-                There are currently no elections available.
-            </p>
-
-        {% endif %}
-
-
-    </div>
-
-
-</div>
-
-
+  </script>
 </body>
 
 </html>

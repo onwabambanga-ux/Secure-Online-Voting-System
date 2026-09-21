@@ -2,1007 +2,234 @@
 <html lang="en">
 
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>My Profile - Live SRC Voting System</title>
-
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-
-        body {
-            background-color: #f4f6f8;
-            color: #1f2937;
-            min-height: 100vh;
-        }
-
-
-        .navbar {
-            background-color: #222;
-            color: white;
-            padding: 18px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-
-        .navbar h2 {
-            margin: 0;
-        }
-
-
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-
-        .navbar-right a {
-            color: white;
-            text-decoration: none;
-        }
-
-
-        .logout {
-            padding: 8px 15px;
-            border: 1px solid white;
-            border-radius: 5px;
-        }
-
-
-        .back-link {
-            padding: 8px 15px;
-            border: 1px solid white;
-            border-radius: 5px;
-            background: #444;
-        }
-
-
-        .back-link:hover {
-            background: #666;
-        }
-
-
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 35px auto;
-        }
-
-
-        .profile-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-
-        .profile-header {
-            background: linear-gradient(135deg, #222, #444);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            background: white;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            color: #222;
-            border: 4px solid rgba(255, 255, 255, 0.5);
-        }
-
-
-        .profile-header h1 {
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-
-        .profile-header p {
-            color: #cccccc;
-            font-size: 14px;
-        }
-
-
-        .profile-body {
-            padding: 30px;
-        }
-
-
-        .profile-section {
-            margin-bottom: 30px;
-        }
-
-
-        .profile-section h2 {
-            font-size: 18px;
-            color: #374151;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-
-        .info-item {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #2563eb;
-        }
-
-
-        .info-item label {
-            display: block;
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
-
-
-        .info-item .value {
-            font-size: 16px;
-            font-weight: bold;
-            color: #1f2937;
-        }
-
-
-        .info-item.full-width {
-            grid-column: span 2;
-        }
-
-
-        .info-item.status-active {
-            background: #f0fdf4;
-            border-left-color: #16a34a;
-        }
-
-
-        .info-item.status-eligible {
-            background: #f0fdf4;
-            border-left-color: #16a34a;
-        }
-
-
-        .info-item.status-registered {
-            background: #f0fdf4;
-            border-left-color: #16a34a;
-        }
-
-
-        .info-item.status-warning {
-            background: #fff7ed;
-            border-left-color: #f97316;
-        }
-
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-
-
-        .badge-active {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-
-        .badge-eligible {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-
-        .badge-registered {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-
-        .badge-warning {
-            background: #ffedd5;
-            color: #9a3412;
-        }
-
-
-        .info-actions {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-
-        .info-actions h3 {
-            margin-bottom: 10px;
-            font-size: 15px;
-            color: #374151;
-        }
-
-
-        .info-actions p {
-            color: #6b7280;
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
-
-
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-
-        .action-button {
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-
-        .admin-actions {
-            margin-top: 30px;
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-
-        .admin-actions h3 {
-            color: #92400e;
-            margin-bottom: 10px;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-
-        .admin-actions ul {
-            margin-left: 20px;
-            color: #78350f;
-            font-size: 13px;
-            line-height: 2;
-        }
-
-
-        .edit-profile-button {
-            background: #222;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-
-        .edit-profile-button:hover {
-            background: #444;
-        }
-
-
-        .activity-summary {
-            margin-top: 30px;
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-
-        .activity-summary h2 {
-            font-size: 18px;
-            color: #374151;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-
-        .activity-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: #f9fafb;
-            border-radius: 8px;
-        }
-
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #222;
-            margin-bottom: 5px;
-        }
-
-
-        .stat-label {
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-
-        .message {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-
-        .profile-unavailable {
-            text-align: center;
-            padding: 30px;
-        }
-
-
-        .profile-unavailable h2 {
-            margin-bottom: 10px;
-        }
-
-
-        .profile-unavailable p {
-            color: #6b7280;
-        }
-
-
-        @media (max-width: 700px) {
-
-            .container {
-                width: 95%;
-                padding: 0;
-            }
-
-
-            .profile-header {
-                padding: 20px;
-            }
-
-
-            .profile-header h1 {
-                font-size: 24px;
-            }
-
-
-            .profile-body {
-                padding: 20px;
-            }
-
-
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-
-            .info-item.full-width {
-                grid-column: span 1;
-            }
-
-
-            .activity-stats {
-                grid-template-columns: 1fr;
-            }
-
-
-            .navbar {
-                padding: 15px 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-
-            .navbar-right {
-                gap: 10px;
-            }
-
-        }
-
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>My Profile | Live SRC Voting System</title>
 </head>
 
+<body class="profile-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar profile-navbar">
+    <a class="brand" href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'profile' %}{% endif %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Live SRC Voting System</span>
+    </a>
 
-<body>
+    <nav class="navbar-right" aria-label="Profile navigation">
+      {% if request.user.is_staff %}
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      {% else %}
+      <a href="{% url 'dashboard' %}" class="back-link">Student Dashboard</a>
+      {% endif %}
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
 
+  <main class="container profile-container">
+    {% if messages %}
+    <section class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message">{{ message }}</div>
+      {% endfor %}
+    </section>
+    {% endif %}
 
-    <!-- NAVIGATION BAR -->
-
-    <div class="navbar">
-
-        <h2>
-            Live SRC Voting System
-        </h2>
-
-
-        <div class="navbar-right">
-
-            {% if request.user.is_staff %}
-
-                <a
-                    href="{% url 'admin_dashboard' %}"
-                    class="back-link"
-                >
-                    ← Admin Dashboard
-                </a>
-
-            {% else %}
-
-                <a
-                    href="{% url 'dashboard' %}"
-                    class="back-link"
-                >
-                    ← Student Dashboard
-                </a>
-
-            {% endif %}
-
-
-            <a
-                href="{% url 'logout' %}"
-                class="logout"
-            >
-                Logout
-            </a>
-
+    <section class="profile-card" aria-labelledby="profile-title">
+      {% if student_profile %}
+      <div class="profile-header">
+        <div class="profile-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <circle cx="12" cy="8" r="3.5"></circle>
+            <path d="M5 20c.8-3.5 3.1-5.2 7-5.2s6.2 1.7 7 5.2"></path>
+          </svg>
         </div>
-
-    </div>
-
-
-
-    <div class="container">
-
-
-        <!-- MESSAGES -->
-
-        {% if messages %}
-
-            {% for message in messages %}
-
-                <div class="message">
-
-                    {{ message }}
-
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
-
-
-
-        <!-- PROFILE CARD -->
-
-        <div class="profile-card">
-
-
-            {% if student_profile %}
-
-
-                <!-- PROFILE HEADER -->
-
-                <div class="profile-header">
-
-                    <div class="profile-avatar">
-                        👤
-                    </div>
-
-
-                    <h1>
-                        {{ student_profile.full_name }}
-                    </h1>
-
-
-                    <p>
-                        Student Profile
-                    </p>
-
-                </div>
-
-
-
-                <div class="profile-body">
-
-
-                    <!-- PERSONAL INFORMATION -->
-
-                    <div class="profile-section">
-
-                        <h2>
-                            📋 My Profile
-                        </h2>
-
-
-                        <div class="info-grid">
-
-
-                            <div class="info-item full-width">
-
-                                <label>
-                                    Student Number
-                                </label>
-
-
-                                <div class="value">
-                                    {{ student_profile.student_number }}
-                                </div>
-
-                            </div>
-
-
-
-                            <div class="info-item full-width">
-
-                                <label>
-                                    Name
-                                </label>
-
-
-                                <div class="value">
-                                    {{ student_profile.full_name }}
-                                </div>
-
-                            </div>
-
-
-
-                            <div class="info-item">
-
-                                <label>
-                                    Campus
-                                </label>
-
-
-                                <div class="value">
-                                    {{ student_profile.campus }}
-                                </div>
-
-                            </div>
-
-
-
-                            <div class="info-item">
-
-                                <label>
-                                    Faculty
-                                </label>
-
-
-                                <div class="value">
-                                    {{ student_profile.faculty }}
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- REGISTRATION STATUS -->
-
-                    <div class="profile-section">
-
-                        <h2>
-                            📊 Registration Status
-                        </h2>
-
-
-                        <div class="info-grid">
-
-
-                            <!-- REGISTERED -->
-
-                            <div
-                                class="info-item
-                                {% if student_profile.registered %}
-                                    status-registered
-                                {% else %}
-                                    status-warning
-                                {% endif %}"
-                            >
-
-                                <label>
-                                    Registration
-                                </label>
-
-
-                                <div class="value">
-
-                                    {% if student_profile.registered %}
-
-                                        Registered
-
-                                        <span class="status-badge badge-registered">
-                                            ✓
-                                        </span>
-
-                                    {% else %}
-
-                                        Not Registered
-
-                                        <span class="status-badge badge-warning">
-                                            !
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-
-
-                            <!-- ELIGIBILITY -->
-
-                            <div
-                                class="info-item
-                                {% if student_profile.eligible %}
-                                    status-eligible
-                                {% else %}
-                                    status-warning
-                                {% endif %}"
-                            >
-
-                                <label>
-                                    Eligibility
-                                </label>
-
-
-                                <div class="value">
-
-                                    {% if student_profile.eligible %}
-
-                                        Eligible to Vote
-
-                                        <span class="status-badge badge-eligible">
-                                            ✓
-                                        </span>
-
-                                    {% else %}
-
-                                        Not Eligible
-
-                                        <span class="status-badge badge-warning">
-                                            !
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-
-
-                            <!-- ACCOUNT STATUS -->
-
-                            <div
-                                class="info-item
-                                {% if student_profile.account_status == 'ACTIVE' %}
-                                    status-active
-                                {% else %}
-                                    status-warning
-                                {% endif %}"
-                            >
-
-                                <label>
-                                    Account Status
-                                </label>
-
-
-                                <div class="value">
-
-                                    {{ student_profile.get_account_status_display }}
-
-
-                                    {% if student_profile.account_status == 'ACTIVE' %}
-
-                                        <span class="status-badge badge-active">
-                                            ✓
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="status-badge badge-warning">
-                                            !
-                                        </span>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- IMPORTANT INFORMATION -->
-
-                    <div class="profile-section">
-
-                        <h2>
-                            ⚠️ Important Information
-                        </h2>
-
-
-                        <div class="info-actions">
-
-                            <h3>
-                                To Vote, You Must:
-                            </h3>
-
-
-                            <p>
-                                Be registered as a student and have an active account
-                            </p>
-
-
-                            <p>
-                                Be eligible to vote in SRC elections
-                            </p>
-
-
-                            <div class="action-buttons">
-
-
-                                <a
-                                    href="{% url 'dashboard' %}"
-                                    class="action-button btn-primary"
-                                >
-                                    🗳️ Go to Elections
-                                </a>
-
-
-                                <a
-                                    href="{% url 'results' %}"
-                                    class="action-button btn-secondary"
-                                >
-                                    📊 View Results
-                                </a>
-
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- ADMIN INFORMATION -->
-
-                    {% if user.is_staff or user.is_superuser %}
-
-                        <div class="admin-actions">
-
-                            <h3>
-                                🔧 Administrator Actions
-                            </h3>
-
-
-                            <ul>
-
-                                <li>
-                                    You have administrator privileges
-                                </li>
-
-                                <li>
-                                    You can manage elections, candidates, and voters
-                                </li>
-
-                                <li>
-                                    You can view audit logs and system reports
-                                </li>
-
-                            </ul>
-
-                        </div>
-
-                    {% endif %}
-
-
-
-                    <!-- EDIT PROFILE -->
-
-                    <div style="text-align: center; margin-top: 20px;">
-
-                        <a
-                            href="{% url 'edit_profile' %}"
-                            class="edit-profile-button"
-                        >
-                            ✏️ Edit Profile
-                        </a>
-
-                    </div>
-
-
-                </div>
-
-
-            {% else %}
-
-
-                <!-- PROFILE NOT FOUND -->
-
-                <div class="profile-body">
-
-                    <div class="profile-unavailable">
-
-                        <h2>
-                            Student Profile Not Available
-                        </h2>
-
-
-                        <p>
-                            Your student profile has not been set up yet.
-                            Please contact the administrator.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-            {% endif %}
-
-
-        </div>
-
-
-
-        <!-- VOTING ACTIVITY -->
-
-        <div class="activity-summary">
-
-            <h2>
-                📈 Voting Activity
-            </h2>
-
-
-            <div class="activity-stats">
-
-
-                <div class="stat-item">
-
-                    <div class="stat-number">
-                        {{ total_elections|default:"0" }}
-                    </div>
-
-                    <div class="stat-label">
-                        Elections Available
-                    </div>
-
-                </div>
-
-
-
-                <div class="stat-item">
-
-                    <div class="stat-number">
-                        {{ elections_voted|default:"0" }}
-                    </div>
-
-                    <div class="stat-label">
-                        Votes Cast
-                    </div>
-
-                </div>
-
-
-
-                <div class="stat-item">
-
-                    <div class="stat-number">
-                        {{ pending_elections|default:"0" }}
-                    </div>
-
-                    <div class="stat-label">
-                        Elections to Vote
-                    </div>
-
-                </div>
-
-
+        <p class="eyebrow">Student account</p>
+        <h1 id="profile-title">{{ student_profile.full_name }}</h1>
+        <p>Student Profile</p>
+      </div>
+
+      <div class="profile-body">
+        <section class="profile-section" aria-labelledby="personal-title">
+          <div class="section-heading">
+            <span class="section-icon icon-primary" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+              </svg>
+            </span>
+            <h2 id="personal-title">My Profile</h2>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item full-width">
+              <span class="info-label">Student Number</span>
+              <strong>{{ student_profile.student_number }}</strong>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">Name</span>
+              <strong>{{ student_profile.full_name }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Campus</span>
+              <strong>{{ student_profile.campus }}</strong>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Faculty</span>
+              <strong>{{ student_profile.faculty }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="profile-section" aria-labelledby="status-title">
+          <div class="section-heading">
+            <span class="section-icon icon-success" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M4 19V5M4 19h17"></path>
+                <path d="m7 15 4-4 3 2 5-6"></path>
+              </svg>
+            </span>
+            <h2 id="status-title">Registration Status</h2>
+          </div>
+
+          <div class="info-grid status-grid">
+            <div class="info-item {% if student_profile.registered %}status-registered{% else %}status-warning{% endif %}">
+              <span class="info-label">Registration</span>
+              <strong>
+                {% if student_profile.registered %}
+                Registered <span class="status-badge badge-registered">✓</span>
+                {% else %}
+                Not Registered <span class="status-badge badge-warning">!</span>
+                {% endif %}
+              </strong>
             </div>
 
+            <div class="info-item {% if student_profile.eligible %}status-eligible{% else %}status-warning{% endif %}">
+              <span class="info-label">Eligibility</span>
+              <strong>
+                {% if student_profile.eligible %}
+                Eligible to Vote <span class="status-badge badge-eligible">✓</span>
+                {% else %}
+                Not Eligible <span class="status-badge badge-warning">!</span>
+                {% endif %}
+              </strong>
+            </div>
+
+            <div class="info-item {% if student_profile.account_status == 'ACTIVE' %}status-active{% else %}status-warning{% endif %}">
+              <span class="info-label">Account Status</span>
+              <strong>
+                {{ student_profile.get_account_status_display }}
+                {% if student_profile.account_status == 'ACTIVE' %}
+                <span class="status-badge badge-active">✓</span>
+                {% else %}
+                <span class="status-badge badge-warning">!</span>
+                {% endif %}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="profile-section" aria-labelledby="important-title">
+          <div class="section-heading">
+            <span class="section-icon icon-warning" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M12 3 2.8 20h18.4L12 3Z"></path>
+                <path d="M12 9v4M12 17h.01"></path>
+              </svg>
+            </span>
+            <h2 id="important-title">Important Information</h2>
+          </div>
+
+          <div class="info-actions">
+            <h3>To Vote, You Must:</h3>
+            <p>Be registered as a student and have an active account</p>
+            <p>Be eligible to vote in SRC elections</p>
+            <div class="action-buttons">
+              <a href="{% url 'dashboard' %}" class="action-button btn-primary">Go to Elections <span aria-hidden="true">→</span></a>
+              <a href="{% url 'results' %}" class="action-button btn-secondary">View Results <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </section>
+
+        {% if user.is_staff or user.is_superuser %}
+        <aside class="admin-actions">
+          <div class="admin-heading">
+            <span class="section-icon icon-warning" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M12 8v4l3 2"></path>
+                <circle cx="12" cy="12" r="8"></circle>
+              </svg>
+            </span>
+            <h3>Administrator Actions</h3>
+          </div>
+          <ul>
+            <li>You have administrator privileges</li>
+            <li>You can manage elections, candidates, and voters</li>
+            <li>You can view audit logs and system reports</li>
+          </ul>
+        </aside>
+        {% endif %}
+
+        <div class="edit-action">
+          <a href="{% url 'edit_profile' %}" class="edit-profile-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m14 5 5 5"></path>
+              <path d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0-3-3L5 17v3Z"></path>
+            </svg>
+            Edit Profile
+          </a>
         </div>
+      </div>
+      {% else %}
+      <div class="profile-body profile-unavailable">
+        <div class="empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <circle cx="12" cy="8" r="3"></circle>
+            <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
+          </svg>
+        </div>
+        <h2>Student Profile Not Available</h2>
+        <p>Your student profile has not been set up yet. Please contact the administrator.</p>
+      </div>
+      {% endif %}
+    </section>
 
+    <section class="activity-summary" aria-labelledby="activity-title">
+      <div class="section-heading">
+        <span class="section-icon icon-primary" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <path d="M4 19V5M4 19h17"></path>
+            <path d="m7 15 4-4 3 2 5-6"></path>
+          </svg>
+        </span>
+        <h2 id="activity-title">Voting Activity</h2>
+      </div>
 
-    </div>
-
-
+      <div class="activity-stats">
+        <div class="stat-item">
+          <strong>{{ total_elections|default:"0" }}</strong>
+          <span>Elections Available</span>
+        </div>
+        <div class="stat-item">
+          <strong>{{ elections_voted|default:"0" }}</strong>
+          <span>Votes Cast</span>
+        </div>
+        <div class="stat-item">
+          <strong>{{ pending_elections|default:"0" }}</strong>
+          <span>Elections to Vote</span>
+        </div>
+      </div>
+    </section>
+  </main>
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 </body>
 
 </html>
