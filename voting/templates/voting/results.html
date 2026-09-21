@@ -1,648 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 
-{% load static %}
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <link
-        rel="stylesheet"
-        href="{% static 'voting/css/style.css' %}"
-    >
-
-    <title>
-        Election Results - Live SRC Voting System
-    </title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Election Results | Live SRC Voting System</title>
 </head>
 
-
-<body>
-
-
-    <!-- NAVBAR -->
-
-    <div class="navbar">
-
-        <h2>
-            Live SRC Voting System
-        </h2>
-
-
-        <div class="navbar-right">
-
-            {% if request.user.is_staff %}
-
-                <a
-                    href="{% url 'admin_dashboard' %}"
-                    class="back-link"
-                >
-                    Admin Dashboard
-                </a>
-
-            {% else %}
-
-                <a
-                    href="{% url 'dashboard' %}"
-                    class="back-link"
-                >
-                    Student Dashboard
-                </a>
-
-            {% endif %}
-
-
-            <a
-                href="{% url 'logout' %}"
-                class="logout"
-            >
-                Logout
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <!-- MAIN CONTAINER -->
-
-    <div class="container">
-
-
-        <!-- PAGE HEADER -->
-
-        <div class="page-header">
-
-            <h1>
-                Election Results
-            </h1>
-
-            <p>
-                View live results for all SRC elections
-            </p>
-
-        </div>
-
-
-        <!-- MESSAGES -->
-
-        {% if messages %}
-
-            {% for message in messages %}
-
-                <div
-                    class="message
-                    {% if message.tags %}
-                        {{ message.tags }}
-                    {% endif %}"
-                >
-                    {{ message }}
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
-
-
-        <!-- ELECTIONS -->
-
-        {% if elections %}
-
-
-            {% for election_data in elections %}
-
-
-                <div class="election-results">
-
-
-                    <!-- ELECTION HEADER -->
-
-                    <div class="election-header">
-
-                        <h2>
-                            {{ election_data.election.title }}
-                        </h2>
-
-
-                        <span
-                            class="status-badge status-{{ election_data.election.status|lower }}"
-                        >
-                            {{ election_data.election.get_status_display }}
-                        </span>
-
-                    </div>
-
-
-                    <div class="election-body">
-
-
-                        <!-- ELECTION DESCRIPTION -->
-
-                        <p class="election-description">
-
-                            {{ election_data.election.description }}
-
-                        </p>
-
-
-                        <!-- ELECTION INFORMATION -->
-
-                        <div class="election-dates">
-
-                            <strong>
-                                Start:
-                            </strong>
-
-                            {{ election_data.election.start_date }}
-
-                            <br>
-
-
-                            <strong>
-                                End:
-                            </strong>
-
-                            {{ election_data.election.end_date }}
-
-                            <br>
-
-
-                            <strong>
-                                Election Type:
-                            </strong>
-
-                            {{ election_data.election.get_election_type_display }}
-
-
-                            {% if election_data.election.campus %}
-
-                                <br>
-
-                                <strong>
-                                    Campus:
-                                </strong>
-
-                                {{ election_data.election.campus }}
-
-                            {% endif %}
-
-                        </div>
-
-
-                        <!-- RESULTS -->
-
-                        <div class="results-section">
-
-
-                            <!-- VOTING STATUS MESSAGE -->
-
-                            {% if election_data.election.status == 'OPEN' %}
-
-                                <p
-                                    style="
-                                        color: #f59e0b;
-                                        font-weight: bold;
-                                        margin-bottom: 15px;
-                                    "
-                                >
-                                    Voting is still in progress.
-                                    Results are preliminary.
-                                </p>
-
-                            {% elif election_data.election.status == 'SCHEDULED' %}
-
-                                <p
-                                    style="
-                                        color: #6b7280;
-                                        font-weight: bold;
-                                        margin-bottom: 15px;
-                                    "
-                                >
-                                    Election is scheduled.
-                                    Voting has not started yet.
-                                </p>
-
-                            {% endif %}
-
-
-                            {% if election_data.election.status != 'SCHEDULED' %}
-
-
-                                <!-- ================================= -->
-                                <!-- INSTITUTIONAL SRC -->
-                                <!-- ================================= -->
-
-                                <div
-                                    class="results-section"
-                                    style="
-                                        margin-bottom: 35px;
-                                    "
-                                >
-
-                                    <h2
-                                        style="
-                                            font-size: 24px;
-                                            margin-bottom: 8px;
-                                            color: #222;
-                                        "
-                                    >
-                                        Institutional SRC
-                                    </h2>
-
-
-                                    <p
-                                        style="
-                                            color: #6b7280;
-                                            margin-bottom: 20px;
-                                        "
-                                    >
-                                        Institutional SRC Election Results
-                                    </p>
-
-
-                                    {% if election_data.institutional_results %}
-
-
-                                        {% for result in election_data.institutional_results %}
-
-
-                                            <div
-                                                class="
-                                                    candidate-result
-                                                    {% if result.is_winner %}
-                                                        winner
-                                                    {% endif %}
-                                                "
-                                            >
-
-
-                                                <!-- CANDIDATE INFORMATION -->
-
-                                                <div class="candidate-info">
-
-
-                                                    {% if result.candidate.image %}
-
-                                                        <img
-                                                            src="{{ result.candidate.image.url }}"
-                                                            alt="{{ result.candidate.name }}"
-                                                            class="candidate-image"
-                                                        >
-
-                                                    {% else %}
-
-                                                        <div
-                                                            class="candidate-image-placeholder"
-                                                        >
-                                                            👤
-                                                        </div>
-
-                                                    {% endif %}
-
-
-                                                    <div class="candidate-name">
-
-                                                        {{ result.candidate.name }}
-
-                                                    </div>
-
-
-                                                    <div class="candidate-type">
-
-                                                        {{ result.candidate.get_candidate_type_display }}
-
-                                                    </div>
-
-
-                                                </div>
-
-
-                                                <!-- VOTE COUNT -->
-
-                                                <div class="vote-count">
-
-
-                                                    <span class="vote-count-number">
-
-                                                        {{ result.vote_count }}
-
-                                                    </span>
-
-
-                                                    <span class="vote-count-label">
-
-                                                        vote{{ result.vote_count|pluralize }}
-
-                                                    </span>
-
-
-                                                    <span class="percentage">
-
-                                                        {{ result.percentage }}%
-
-                                                    </span>
-
-
-                                                </div>
-
-
-                                                <!-- PROGRESS BAR -->
-
-                                                <div class="progress-bar-container">
-
-                                                    <div
-                                                        class="progress-bar"
-                                                        style="
-                                                            --percentage: {{ result.percentage }};
-                                                            width: calc(var(--percentage) * 1%);
-                                                        "
-                                                    ></div>
-
-                                                </div>
-
-
-                                            </div>
-
-
-                                        {% endfor %}
-
-
-                                        <!-- INSTITUTIONAL TOTAL -->
-
-                                        <div class="total-votes">
-
-                                            Total Institutional SRC Votes:
-
-                                            {{ election_data.institutional_total_votes }}
-
-                                        </div>
-
-
-                                    {% else %}
-
-
-                                        <p
-                                            style="
-                                                color: #6b7280;
-                                                text-align: center;
-                                                padding: 20px;
-                                            "
-                                        >
-                                            No Institutional SRC votes
-                                            have been recorded yet.
-                                        </p>
-
-
-                                    {% endif %}
-
-
-                                </div>
-
-
-                                <!-- ================================= -->
-                                <!-- CAMPUS SRC -->
-                                <!-- ================================= -->
-
-                                <div
-                                    class="results-section"
-                                    style="
-                                        margin-bottom: 20px;
-                                    "
-                                >
-
-
-                                    <h2
-                                        style="
-                                            font-size: 24px;
-                                            margin-bottom: 8px;
-                                            color: #222;
-                                        "
-                                    >
-                                        Campus SRC
-                                    </h2>
-
-
-                                    <p
-                                        style="
-                                            color: #6b7280;
-                                            margin-bottom: 20px;
-                                        "
-                                    >
-                                        Campus SRC Election Results
-                                    </p>
-
-
-                                    {% if election_data.campus_results %}
-
-
-                                        {% for result in election_data.campus_results %}
-
-
-                                            <div
-                                                class="
-                                                    candidate-result
-                                                    {% if result.is_winner %}
-                                                        winner
-                                                    {% endif %}
-                                                "
-                                            >
-
-
-                                                <!-- CANDIDATE INFORMATION -->
-
-                                                <div class="candidate-info">
-
-
-                                                    {% if result.candidate.image %}
-
-                                                        <img
-                                                            src="{{ result.candidate.image.url }}"
-                                                            alt="{{ result.candidate.name }}"
-                                                            class="candidate-image"
-                                                        >
-
-                                                    {% else %}
-
-                                                        <div
-                                                            class="candidate-image-placeholder"
-                                                        >
-                                                            👤
-                                                        </div>
-
-                                                    {% endif %}
-
-
-                                                    <div class="candidate-name">
-
-                                                        {{ result.candidate.name }}
-
-                                                    </div>
-
-
-                                                    <div class="candidate-type">
-
-                                                        {{ result.candidate.get_candidate_type_display }}
-
-                                                    </div>
-
-
-                                                </div>
-
-
-                                                <!-- VOTE COUNT -->
-
-                                                <div class="vote-count">
-
-
-                                                    <span class="vote-count-number">
-
-                                                        {{ result.vote_count }}
-
-                                                    </span>
-
-
-                                                    <span class="vote-count-label">
-
-                                                        vote{{ result.vote_count|pluralize }}
-
-                                                    </span>
-
-
-                                                    <span class="percentage">
-
-                                                        {{ result.percentage }}%
-
-                                                    </span>
-
-
-                                                </div>
-
-
-                                                <!-- PROGRESS BAR -->
-
-                                                <div class="progress-bar-container">
-
-                                                    <div
-                                                        class="progress-bar"
-                                                        data-percentage="{{ result.percentage }}"
-                                                    ></div>
-
-                                                </div>
-
-
-                                            </div>
-
-
-                                        {% endfor %}
-
-
-                                        <!-- CAMPUS TOTAL -->
-
-                                        <div class="total-votes">
-
-                                            Total Campus SRC Votes:
-
-                                            {{ election_data.campus_total_votes }}
-
-                                        </div>
-
-
-                                    {% else %}
-
-
-                                        <p
-                                            style="
-                                                color: #6b7280;
-                                                text-align: center;
-                                                padding: 20px;
-                                            "
-                                        >
-                                            No Campus SRC votes
-                                            have been recorded yet.
-                                        </p>
-
-
-                                    {% endif %}
-
-
-                                </div>
-
-
-                            {% endif %}
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-            {% endfor %}
-
-
-        {% else %}
-
-
-            <!-- NO ELECTIONS -->
-
-            <div class="no-results">
-
-                <h3>
-                    No elections available
-                </h3>
-
-                <p>
-                    There are currently no elections
-                    to display results for.
-                </p>
-
-            </div>
-
-
-        {% endif %}
-
-
-    </div>
-
-
-    <!-- LIVE REFRESH -->
-
-    {% if elections %}
-
-        {% for election_data in elections %}
-
-            {% if election_data.election.status == 'OPEN' %}
-
-                <script>
-
-                    setTimeout(
-                        function () {
-
-                            window.location.reload();
-
-                        },
-                        5000
-                    );
-
-                </script>
-
-            {% endif %}
-
-        {% endfor %}
-
+<body class="results-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar results-navbar">
+    <a class="brand" href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Live SRC Voting System</span>
+    </a>
+
+    <nav class="navbar-right" aria-label="Results navigation">
+      {% if request.user.is_staff %}
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      {% else %}
+      <a href="{% url 'dashboard' %}" class="back-link">Student Dashboard</a>
+      {% endif %}
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container results-container">
+    <section class="page-header results-page-header" aria-labelledby="results-title">
+      <p class="eyebrow">Election transparency</p>
+      <h1 id="results-title">Election Results</h1>
+      <p>View live results for all SRC elections.</p>
+    </section>
+
+    {% if messages %}
+    <section class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message message-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </section>
     {% endif %}
 
+    {% if elections %}
+    <section class="results-list" aria-label="Election results">
+      {% for election_data in elections %}
+      <article class="election-results">
+        <header class="election-header">
+          <div>
+            <p class="election-label">SRC election</p>
+            <h2>{{ election_data.election.title }}</h2>
+          </div>
+          <span class="status-badge status-{{ election_data.election.status|lower }}">
+            {{ election_data.election.get_status_display }}
+          </span>
+        </header>
 
+        <div class="election-body">
+          <p class="election-description">{{ election_data.election.description }}</p>
+
+          <div class="election-dates">
+            <span><strong>Start</strong>{{ election_data.election.start_date }}</span>
+            <span><strong>End</strong>{{ election_data.election.end_date }}</span>
+            <span><strong>Election type</strong>{{ election_data.election.get_election_type_display }}</span>
+            {% if election_data.election.campus %}
+            <span><strong>Campus</strong>{{ election_data.election.campus }}</span>
+            {% endif %}
+          </div>
+
+          <div class="results-content">
+            {% if election_data.election.status == 'OPEN' %}
+            <div class="result-notice notice-open" role="status">
+              <span class="notice-icon" aria-hidden="true">!</span>
+              <span>Voting is still in progress. Results are preliminary.</span>
+            </div>
+            {% elif election_data.election.status == 'SCHEDULED' %}
+            <div class="result-notice notice-scheduled" role="status">
+              <span class="notice-icon" aria-hidden="true">i</span>
+              <span>Election is scheduled. Voting has not started yet.</span>
+            </div>
+            {% endif %}
+
+            {% if election_data.election.status != 'SCHEDULED' %}
+            <section class="result-group" aria-labelledby="institutional-{{ election_data.election.id }}">
+              <div class="result-group-heading">
+                <div>
+                  <p class="eyebrow">Institutional division</p>
+                  <h3 id="institutional-{{ election_data.election.id }}">Institutional SRC</h3>
+                  <p>Institutional SRC Election Results</p>
+                </div>
+                <span class="group-icon icon-primary" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img" focusable="false">
+                    <path d="M4 19V5M4 19h17"></path>
+                    <path d="m7 15 4-4 3 2 5-6"></path>
+                  </svg>
+                </span>
+              </div>
+
+              {% if election_data.institutional_results %}
+              <div class="candidate-list">
+                {% for result in election_data.institutional_results %}
+                <article class="candidate-result {% if result.is_winner %}winner{% endif %}">
+                  <div class="candidate-info">
+                    {% if result.candidate.image %}
+                    <img src="{{ result.candidate.image.url }}" alt="{{ result.candidate.name }}" class="candidate-image">
+                    {% else %}
+                    <div class="candidate-image-placeholder" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" role="img" focusable="false">
+                        <circle cx="12" cy="8" r="3"></circle>
+                        <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
+                      </svg>
+                    </div>
+                    {% endif %}
+                    <div class="candidate-copy">
+                      <h4 class="candidate-name">{{ result.candidate.name }}</h4>
+                      <p class="candidate-type">{{ result.candidate.get_candidate_type_display }}</p>
+                    </div>
+                    {% if result.is_winner %}
+                    <span class="winner-badge">Leading</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="vote-summary">
+                    <strong>{{ result.vote_count }}</strong>
+                    <span>vote{{ result.vote_count|pluralize }}</span>
+                    <span class="percentage">{{ result.percentage }}%</span>
+                  </div>
+
+                  <div class="progress-bar-container" aria-label="{{ result.percentage }} percent">
+                    <div class="progress-bar" style="width: {{ result.percentage }}%;"></div>
+                  </div>
+                </article>
+                {% endfor %}
+              </div>
+              <p class="total-votes">Total Institutional SRC Votes: <strong>{{ election_data.institutional_total_votes }}</strong></p>
+              {% else %}
+              <p class="empty-results">No Institutional SRC votes have been recorded yet.</p>
+              {% endif %}
+            </section>
+
+            <section class="result-group" aria-labelledby="campus-{{ election_data.election.id }}">
+              <div class="result-group-heading">
+                <div>
+                  <p class="eyebrow">Campus division</p>
+                  <h3 id="campus-{{ election_data.election.id }}">Campus SRC</h3>
+                  <p>Campus SRC Election Results</p>
+                </div>
+                <span class="group-icon icon-success" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img" focusable="false">
+                    <path d="M4 5h16v14H4zM8 9h8M8 13h5"></path>
+                    <path d="m14 16 2 2 4-5"></path>
+                  </svg>
+                </span>
+              </div>
+
+              {% if election_data.campus_results %}
+              <div class="candidate-list">
+                {% for result in election_data.campus_results %}
+                <article class="candidate-result {% if result.is_winner %}winner{% endif %}">
+                  <div class="candidate-info">
+                    {% if result.candidate.image %}
+                    <img src="{{ result.candidate.image.url }}" alt="{{ result.candidate.name }}" class="candidate-image">
+                    {% else %}
+                    <div class="candidate-image-placeholder" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" role="img" focusable="false">
+                        <circle cx="12" cy="8" r="3"></circle>
+                        <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
+                      </svg>
+                    </div>
+                    {% endif %}
+                    <div class="candidate-copy">
+                      <h4 class="candidate-name">{{ result.candidate.name }}</h4>
+                      <p class="candidate-type">{{ result.candidate.get_candidate_type_display }}</p>
+                    </div>
+                    {% if result.is_winner %}
+                    <span class="winner-badge">Leading</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="vote-summary">
+                    <strong>{{ result.vote_count }}</strong>
+                    <span>vote{{ result.vote_count|pluralize }}</span>
+                    <span class="percentage">{{ result.percentage }}%</span>
+                  </div>
+
+                  <div class="progress-bar-container" aria-label="{{ result.percentage }} percent">
+                    <div class="progress-bar" style="width: {{ result.percentage }}%;"></div>
+                  </div>
+                </article>
+                {% endfor %}
+              </div>
+              <p class="total-votes">Total Campus SRC Votes: <strong>{{ election_data.campus_total_votes }}</strong></p>
+              {% else %}
+              <p class="empty-results">No Campus SRC votes have been recorded yet.</p>
+              {% endif %}
+            </section>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+    {% else %}
+    <section class="no-results">
+      <div class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="img" focusable="false">
+          <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+        </svg>
+      </div>
+      <h3>No elections available</h3>
+      <p>There are currently no elections to display results for.</p>
+    </section>
+    {% endif %}
+  </main>
+
+  {% if elections %}
+  {% for election_data in elections %}
+  {% if election_data.election.status == 'OPEN' %}
+  <script>
+    setTimeout(function() {
+      window.location.reload();
+    }, 5000);
+
+  </script>
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 </body>
 
 </html>

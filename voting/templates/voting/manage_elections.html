@@ -1,197 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Elections</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background: #f4f6f8;
-            color: #1f2937;
-        }
-        .navbar {
-            background: #172554;
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 {
-            font-size: 24px;
-        }
-        .navbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-        }
-        .back-link {
-            background: #444;
-        }
-        .back-link:hover {
-            background: #666;
-        }
-        .logout {
-            background: #dc2626;
-        }
-        .logout:hover {
-            background: #b91c1c;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 40px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .header h2 {
-            font-size: 30px;
-        }
-        .create-button {
-            background: #16a34a;
-            color: white;
-            text-decoration: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .create-button:hover {
-            background: #15803d;
-        }
-        .election {
-            background: white;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        .election h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-        .description {
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
-        .details {
-            margin-bottom: 20px;
-            line-height: 1.8;
-        }
-        .status {
-            font-weight: bold;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .action-button {
-            text-decoration: none;
-            color: white;
-            background: #2563eb;
-            padding: 9px 15px;
-            border-radius: 5px;
-        }
-        .action-button:hover {
-            background: #1d4ed8;
-        }
-        .delete-button {
-            background: #dc2626;
-        }
-        .delete-button:hover {
-            background: #b91c1c;
-        }
-        .candidates-button {
-            background: #16a34a;
-        }
-        .candidates-button:hover {
-            background: #15803d;
-        }
-        .empty {
-            background: white;
-            padding: 40px;
-            text-align: center;
-            border-radius: 10px;
-        }
-        @media (max-width: 700px) {
-            .container {
-                padding: 20px;
-            }
-            .navbar {
-                padding: 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Manage Elections | Secure Online Voting System</title>
 </head>
-<body>
-    <div class="navbar">
-        <h1>🗳️ Secure Online Voting System</h1>
-        <div class="navbar-right">
-            <a href="{% url 'admin_dashboard' %}" class="back-link">← Admin Dashboard</a>
-            <a href="{% url 'logout' %}" class="logout">Logout</a>
+
+<body class="manage-elections-page auth-sidebar-page">
+  {% include 'partials/auth_sidebar.html' %}
+  <header class="navbar manage-elections-navbar">
+    <a class="brand" href="{% url 'admin_dashboard' %}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Secure Online Voting</span>
+    </a>
+
+    <nav class="navbar-right" aria-label="Election management navigation">
+      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container manage-elections-container">
+    <section class="page-heading manage-elections-hero" aria-labelledby="manage-elections-title">
+      <div>
+        <p class="eyebrow">Election administration</p>
+        <h1 id="manage-elections-title">Manage Elections</h1>
+        <p>Review, update, and organize elections in the voting system.</p>
+      </div>
+
+      <a href="{% url 'create_election' %}" class="create-button">
+        <span aria-hidden="true">+</span>
+        Create Election
+      </a>
+    </section>
+
+    {% if elections %}
+    <section class="election-list manage-elections-list" aria-label="Election list">
+      {% for election in elections %}
+      <article class="election-card">
+        <div class="election-topline">
+          <div>
+            <p class="election-label">Election record</p>
+            <h2>{{ election.title }}</h2>
+          </div>
+          <span class="status status-{{ election.status|lower }}">{{ election.status }}</span>
         </div>
-    </div>
-    <div class="container">
-        <div class="header">
-            <h2>Manage Elections</h2>
-            <a href="{% url 'create_election' %}" class="create-button">
-                + Create Election
-            </a>
+
+        <p class="description">{{ election.description }}</p>
+
+        <div class="details">
+          <div class="detail-item">
+            <span class="detail-label">Start</span>
+            <strong>{{ election.start_date }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">End</span>
+            <strong>{{ election.end_date }}</strong>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Type</span>
+            <strong>{{ election.get_election_type_display }}</strong>
+          </div>
+
+          {% if election.campus %}
+          <div class="detail-item">
+            <span class="detail-label">Campus</span>
+            <strong>{{ election.campus }}</strong>
+          </div>
+          {% endif %}
         </div>
-        {% if elections %}
-            {% for election in elections %}
-                <div class="election">
-                    <h3>{{ election.title }}</h3>
-                    <p class="description">{{ election.description }}</p>
-                    <div class="details">
-                        <strong>Status:</strong> <span class="status">{{ election.status }}</span>
-                        <br>
-                        <strong>Start:</strong> {{ election.start_date }}
-                        <br>
-                        <strong>End:</strong> {{ election.end_date }}
-                        <br>
-                        <strong>Type:</strong> {{ election.get_election_type_display }}
-                        {% if election.campus %}
-                            <br>
-                            <strong>Campus:</strong> {{ election.campus }}
-                        {% endif %}
-                    </div>
-                    <div class="actions">
-                        <a href="{% url 'edit_election' election.id %}" class="action-button">✏️ Edit</a>
-                        <a href="{% url 'delete_election' election.id %}" class="action-button delete-button">🗑️ Delete</a>
-                        <a href="#" class="action-button candidates-button">👤 Manage Candidates</a>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty">
-                <h3>No elections found</h3>
-                <p>There are currently no elections in the system.</p>
-            </div>
-        {% endif %}
-    </div>
+
+        <div class="actions" aria-label="Actions for {{ election.title }}">
+          <a href="{% url 'edit_election' election.id %}" class="action-button edit-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m14 5 5 5"></path>
+              <path d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0-3-3L5 17v3Z"></path>
+            </svg>
+            Edit
+          </a>
+
+          <a href="{% url 'delete_election' election.id %}" class="action-button delete-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path>
+            </svg>
+            Delete
+          </a>
+
+          <a href="#" class="action-button candidates-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="9" cy="8" r="3"></circle>
+              <path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M16 7a3 3 0 0 1 0 6M16 14c2.6.2 4.1 1.8 4.5 5"></path>
+            </svg>
+            Manage Candidates
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+    {% else %}
+    <section class="empty-state manage-elections-empty">
+      <div class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+        </svg>
+      </div>
+      <h2>No elections found</h2>
+      <p>There are currently no elections in the system.</p>
+      <a href="{% url 'create_election' %}" class="create-button">Create Your First Election</a>
+    </section>
+    {% endif %}
+  </main>
+<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 </body>
+
 </html>
