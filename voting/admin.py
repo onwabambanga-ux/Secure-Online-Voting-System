@@ -8,10 +8,8 @@ from .models import (
     Candidate,
     VoterReceipt,
     Vote,
-    VoterReceipt,
     AuditLog
 )
-
 
 # Custom User Admin
 class CustomUserAdmin(UserAdmin):
@@ -74,6 +72,17 @@ class ElectionAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'start_date'
 
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.status in ['OPEN', 'CLOSED', 'RESULTS']:
+            return False
+
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.status in ['OPEN', 'CLOSED', 'RESULTS']:
+            return False
+
+        return super().has_delete_permission(request, obj)
 
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):
@@ -93,6 +102,17 @@ class CandidateAdmin(admin.ModelAdmin):
         'election__title',
     )
 
+    def has_change_permission(self, request, obj=None):
+        if obj and obj.election.status in ['OPEN', 'CLOSED', 'RESULTS']:
+            return False
+
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.election.status in ['OPEN', 'CLOSED', 'RESULTS']:
+            return False
+
+        return super().has_delete_permission(request, obj)
 
 @admin.register(VoterReceipt)
 class VoterReceiptAdmin(admin.ModelAdmin):
@@ -125,6 +145,8 @@ class VoterReceiptAdmin(admin.ModelAdmin):
         'src_category',
         'voted_at',
     )
+    def has_add_permission(self, request):
+     return False
 
 
 @admin.register(Vote)
@@ -160,6 +182,8 @@ class VoteAdmin(admin.ModelAdmin):
         'src_category',
         'voted_at',
     )
+    def has_add_permission(self, request):
+     return False
 
 
 @admin.register(AuditLog)
@@ -218,8 +242,10 @@ class StudentProfileAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = (
-        'student_number',
-        'full_name',
-        'campus',
-        'faculty',
-    )
+    'student_number',
+    'full_name',
+    'campus',
+    'faculty',
+    'user',
+    'eligible',
+)

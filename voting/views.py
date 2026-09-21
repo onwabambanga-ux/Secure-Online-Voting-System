@@ -13,6 +13,7 @@ from .forms import RegistrationForm, ProfileUpdateForm, StudentImportForm
 from .models import Election, Candidate, StudentProfile, Vote, VoterReceipt, AuditLog
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from django.utils.dateparse import parse_datetime
 
 def home(request):
     return render(request, 'voting/home.html')
@@ -171,22 +172,13 @@ def vote(request, election_id):
         )
         return redirect('dashboard')
 
-    # Check eligibility
-    if not student_profile.eligible:
+    # Check account status
+    if student_profile.account_status != 'ACTIVE':
         messages.error(
             request,
             'You are not eligible to vote.'
         )
         return redirect('dashboard')
-
-    # Check account status
-    if student_profile.account_status != 'ACTIVE':
-        messages.error(
-            request,
-            'Your account is not active.'
-        )
-        return redirect('dashboard')
-
 
     # ==========================================================
     # CHECK WHETHER THE VOTER HAS ALREADY COMPLETED
@@ -412,15 +404,14 @@ def results(request):
 
         if election.status not in ['SCHEDULED', 'DRAFT']:
 
+            # =====================================================
+            # INSTITUTIONAL SRC RESULTS
+            # =====================================================
+
             institutional_candidates = election.candidates.filter(
                 src_category='INSTITUTIONAL'
             )
 
-            campus_candidates = election.candidates.filter(
-                src_category='CAMPUS'
-            )
-
-            # Institutional SRC results
             institutional_results = []
 
             institutional_total_votes = Vote.objects.filter(
@@ -451,7 +442,7 @@ def results(request):
                     'is_winner': False,
                 })
 
-            # Find Institutional SRC winner
+            # Determine Institutional SRC winner(s)
             if institutional_results:
 
                 max_votes = max(
@@ -467,54 +458,80 @@ def results(request):
                     ):
                         result['is_winner'] = True
 
+            # =====================================================
+            # CAMPUS SRC RESULTS
+            # =====================================================
 
-            # Campus SRC results
             campus_results = []
 
-            campus_total_votes = Vote.objects.filter(
-                election=election,
-                src_category='CAMPUS'
-            ).count()
+            allowed_campuses = [
+                'Alice Campus',
+                'East London Campus'
+            ]
 
-            for candidate in campus_candidates:
+            for campus in allowed_campuses:
 
-                vote_count = Vote.objects.filter(
-                    election=election,
-                    candidate=candidate,
-                    src_category='CAMPUS'
-                ).count()
-
-                if campus_total_votes > 0:
-                    percentage = round(
-                        (vote_count / campus_total_votes) * 100,
-                        2
-                    )
-                else:
-                    percentage = 0
-
-                campus_results.append({
-                    'candidate': candidate,
-                    'vote_count': vote_count,
-                    'percentage': percentage,
-                    'is_winner': False,
-                })
-
-            # Find Campus SRC winner
-            if campus_results:
-
-                max_votes = max(
-                    result['vote_count']
-                    for result in campus_results
+                campus_candidates = election.candidates.filter(
+                    src_category='CAMPUS',
+                    campus=campus
                 )
 
-                for result in campus_results:
+                campus_total_votes = Vote.objects.filter(
+                    election=election,
+                    src_category='CAMPUS',
+                    candidate__campus=campus
+                ).count()
 
-                    if (
-                        result['vote_count'] == max_votes
-                        and max_votes > 0
-                    ):
-                        result['is_winner'] = True
+                campus_candidate_results = []
 
+                for candidate in campus_candidates:
+
+                    vote_count = Vote.objects.filter(
+                        election=election,
+                        candidate=candidate,
+                        src_category='CAMPUS'
+                    ).count()
+
+                    if campus_total_votes > 0:
+                        percentage = round(
+                            (vote_count / campus_total_votes) * 100,
+                            2
+                        )
+                    else:
+                        percentage = 0
+
+                    campus_candidate_results.append({
+                        'candidate': candidate,
+                        'vote_count': vote_count,
+                        'percentage': percentage,
+                        'is_winner': False,
+                    })
+
+                # Determine Campus SRC winner(s)
+                if campus_candidate_results:
+
+                    max_votes = max(
+                        result['vote_count']
+                        for result in campus_candidate_results
+                    )
+
+                    for result in campus_candidate_results:
+
+                        if (
+                            result['vote_count'] == max_votes
+                            and max_votes > 0
+                        ):
+                            result['is_winner'] = True
+
+                campus_results.append({
+                    'campus': campus,
+                    'results': campus_candidate_results,
+                    'total_votes': campus_total_votes,
+                })
+
+            # =====================================================
+            # STORE ELECTION RESULTS
+            # =====================================================
 
             results_data.append({
                 'election': election,
@@ -523,7 +540,6 @@ def results(request):
                 'institutional_total_votes': institutional_total_votes,
 
                 'campus_results': campus_results,
-                'campus_total_votes': campus_total_votes,
             })
 
         else:
@@ -535,9 +551,7 @@ def results(request):
                 'institutional_total_votes': 0,
 
                 'campus_results': [],
-                'campus_total_votes': 0,
             })
-
 
     return render(
         request,
@@ -670,31 +684,162 @@ def manage_elections(request):
 
 @login_required(login_url='login')
 def create_election(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-
     if not request.user.is_staff:
         return redirect('dashboard')
 
     if request.method == 'POST':
 
-        title = request.POST.get('title')
-        description = request.POST.get('description')
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
-        status = request.POST.get('status')
+        status = 'DRAFT'
+
+        start_date = parse_datetime(start_date)
+        end_date = parse_datetime(end_date)
+
+        if not start_date or not end_date:
+            messages.error(
+                request,
+                'Please provide valid start and end dates.'
+            )
+            return redirect('create_election')
+
+        if end_date <= start_date:
+            messages.error(
+                request,
+                'The election end date must be after the start date.'
+            )
+            return redirect('create_election')
 
         election_type = request.POST.get(
             'election_type',
             'NORMAL'
         )
 
+        if election_type not in ['NORMAL', 'RUNOFF']:
+            messages.error(
+                request,
+                'Invalid election type.'
+            )
+            return redirect('create_election')
+
         campus = request.POST.get(
             'campus',
             ''
-        )
+        ).strip()
 
-        # Create election and candidates together
+        try:
+            candidate_count = int(
+                request.POST.get(
+                    'candidate_count',
+                    0
+                )
+            )
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                'Invalid candidate count.'
+            )
+            return redirect('create_election')
+
+        if candidate_count < 0:
+            messages.error(
+                request,
+                'Invalid candidate count.'
+            )
+            return redirect('create_election')
+
+        allowed_campuses = [
+            'Alice Campus',
+            'East London Campus',
+        ]
+
+        candidate_data = []
+
+        # Validate all candidate data BEFORE creating the election.
+        for i in range(candidate_count):
+
+            candidate_name = request.POST.get(
+                f'candidate_name_{i}',
+                ''
+            ).strip()
+
+            candidate_type = request.POST.get(
+                f'candidate_type_{i}'
+            )
+
+            candidate_src_category = request.POST.get(
+                f'candidate_src_category_{i}'
+            )
+
+            candidate_campus = request.POST.get(
+                f'candidate_campus_{i}',
+                ''
+            ).strip()
+
+            candidate_description = request.POST.get(
+                f'candidate_description_{i}',
+                ''
+            ).strip()
+
+            candidate_image = request.FILES.get(
+                f'candidate_image_{i}'
+            )
+
+            # Ignore completely empty candidate cards.
+            if not candidate_name:
+                continue
+
+            if candidate_type not in [
+                'ORGANIZATION',
+                'INDEPENDENT'
+            ]:
+                messages.error(
+                    request,
+                    'Invalid candidate type.'
+                )
+                return redirect('create_election')
+
+            if candidate_src_category not in [
+                'INSTITUTIONAL',
+                'CAMPUS'
+            ]:
+                messages.error(
+                    request,
+                    'Invalid SRC category for a candidate.'
+                )
+                return redirect('create_election')
+
+            if candidate_src_category == 'CAMPUS':
+
+                if not candidate_campus:
+                    messages.error(
+                        request,
+                        'A Campus SRC candidate must have a campus.'
+                    )
+                    return redirect('create_election')
+
+                if candidate_campus not in allowed_campuses:
+                    messages.error(
+                        request,
+                        'Invalid campus selected for Campus SRC candidate.'
+                    )
+                    return redirect('create_election')
+
+            else:
+                candidate_campus = ''
+
+            candidate_data.append({
+                'name': candidate_name,
+                'candidate_type': candidate_type,
+                'src_category': candidate_src_category,
+                'campus': candidate_campus or None,
+                'description': candidate_description,
+                'image': candidate_image,
+            })
+
+        # Create the election and candidates together.
         with transaction.atomic():
 
             election = Election.objects.create(
@@ -707,66 +852,22 @@ def create_election(request):
                 campus=campus if campus else None
             )
 
-            # Get the number of candidates submitted
-            candidate_count = int(
-                request.POST.get(
-                    'candidate_count',
-                    0
+            for candidate in candidate_data:
+
+                Candidate.objects.create(
+                    election=election,
+                    name=candidate['name'],
+                    candidate_type=candidate['candidate_type'],
+                    src_category=candidate['src_category'],
+                    campus=candidate['campus'],
+                    description=candidate['description'],
+                    image=candidate['image']
                 )
-            )
-
-            # Create each candidate
-            for i in range(candidate_count):
-
-                candidate_name = request.POST.get(
-                    f'candidate_name_{i}'
-                )
-
-                candidate_type = request.POST.get(
-                    f'candidate_type_{i}'
-                )
-
-                candidate_src_category = request.POST.get(
-                    f'candidate_src_category_{i}'
-                )
-
-                candidate_campus = request.POST.get(
-                    f'candidate_campus_{i}',
-                    ''
-                )
-
-                candidate_description = request.POST.get(
-                    f'candidate_description_{i}',
-                    ''
-                )
-
-                candidate_image = request.FILES.get(
-                    f'candidate_image_{i}'
-                )
-
-                # Only create a candidate if a name was provided
-                if candidate_name:
-
-                    Candidate.objects.create(
-                        election=election,
-                        name=candidate_name,
-                        candidate_type=candidate_type,
-                        src_category=candidate_src_category,
-                        campus=(
-                            candidate_campus
-                            if candidate_src_category == 'CAMPUS'
-                            else None
-                        ),
-                        description=candidate_description,
-                        image=candidate_image
-                    )
 
             AuditLog.objects.create(
                 user=request.user,
                 action='CREATE_ELECTION',
-                description=(
-                    f'Created election: {election.title}'
-                )
+                description=f'Created election: {election.title}'
             )
 
         messages.success(
@@ -913,6 +1014,7 @@ def delete_election(request, election_id):
 
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def import_students(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -927,7 +1029,18 @@ def import_students(request):
             excel_file = request.FILES['excel_file']
 
             try:
-                df = pd.read_excel(excel_file)
+                # ---------------------------------------------
+                # Read Excel file
+                # ---------------------------------------------
+
+                df = pd.read_excel(
+                    excel_file,
+                    dtype={'Student Number': str}
+                )
+
+                # ---------------------------------------------
+                # Required columns
+                # ---------------------------------------------
 
                 required_columns = [
                     'Student Number',
@@ -937,14 +1050,16 @@ def import_students(request):
                 ]
 
                 missing_columns = [
-                    col for col in required_columns
+                    col
+                    for col in required_columns
                     if col not in df.columns
                 ]
 
                 if missing_columns:
                     messages.error(
                         request,
-                        f'Missing required columns: {", ".join(missing_columns)}'
+                        f'Missing required columns: '
+                        f'{", ".join(missing_columns)}'
                     )
 
                     return render(
@@ -953,84 +1068,186 @@ def import_students(request):
                         {'form': form}
                     )
 
+                # ---------------------------------------------
+                # Counters and error tracking
+                # ---------------------------------------------
+
                 success_count = 0
                 error_count = 0
                 errors = []
 
+                # Track duplicate student numbers
+                # within this Excel file.
+                seen_student_numbers = set()
+
+                # ---------------------------------------------
+                # Allowed campuses
+                # ---------------------------------------------
+
+                allowed_campuses = [
+                    'Alice Campus',
+                    'East London Campus'
+                ]
+
+                # ---------------------------------------------
+                # Process each student
+                # ---------------------------------------------
+
                 for index, row in df.iterrows():
 
                     try:
-                        # ---------------------------------------------
-                        # Read required student information
-                        # ---------------------------------------------
+                        # -----------------------------------------
+                        # Read Student Number
+                        # -----------------------------------------
 
                         student_number = str(
                             row['Student Number']
                         ).strip()
 
+                        # Check for empty student number
+                        if not student_number or student_number.lower() == 'nan':
+                            raise ValueError(
+                                'Student Number cannot be empty.'
+                            )
+
+                        # -----------------------------------------
+                        # Check for duplicate student number
+                        # -----------------------------------------
+
+                        if student_number in seen_student_numbers:
+                            raise ValueError(
+                                f'Duplicate student number '
+                                f'"{student_number}" found in this Excel file.'
+                            )
+
+                        seen_student_numbers.add(student_number)
+
+                        # -----------------------------------------
+                        # Read Full Name
+                        # -----------------------------------------
+
                         full_name = str(
                             row['Full Name']
                         ).strip()
+
+                        if not full_name or full_name.lower() == 'nan':
+                            raise ValueError(
+                                'Full Name cannot be empty.'
+                            )
+
+                        # -----------------------------------------
+                        # Read Campus
+                        # -----------------------------------------
 
                         campus = str(
                             row['Campus']
                         ).strip()
 
+                        if not campus or campus.lower() == 'nan':
+                            raise ValueError(
+                                'Campus cannot be empty.'
+                            )
+
+                        # -----------------------------------------
+                        # Validate Campus
+                        # -----------------------------------------
+
+                        if campus not in allowed_campuses:
+                            raise ValueError(
+                                f'Invalid campus "{campus}". '
+                                f'Allowed campuses are: '
+                                f'{", ".join(allowed_campuses)}'
+                            )
+
+                        # -----------------------------------------
+                        # Read Faculty
+                        # -----------------------------------------
+
                         faculty = str(
                             row['Faculty']
                         ).strip()
 
-                        # ---------------------------------------------
+                        if not faculty or faculty.lower() == 'nan':
+                            raise ValueError(
+                                'Faculty cannot be empty.'
+                            )
+
+                        # -----------------------------------------
                         # Read registration status
-                        # ---------------------------------------------
+                        # -----------------------------------------
+
+                        registered_value = row.get(
+                            'Registered',
+                            'TRUE'
+                        )
 
                         registered = (
                             str(
-                                row.get('Registered', 'TRUE')
+                                registered_value
                             ).upper().strip()
-                            in ['TRUE', 'YES', '1', 'Y']
+                            in [
+                                'TRUE',
+                                'YES',
+                                '1',
+                                'Y'
+                            ]
                         )
 
-                        # ---------------------------------------------
+                        # -----------------------------------------
                         # Read account status
-                        # ---------------------------------------------
+                        # -----------------------------------------
 
                         account_status = str(
-                            row.get('Account Status', 'ACTIVE')
+                            row.get(
+                                'Account Status',
+                                'ACTIVE'
+                            )
                         ).upper().strip()
+
+                        # -----------------------------------------
+                        # Validate account status
+                        # -----------------------------------------
 
                         if account_status not in [
                             'ACTIVE',
                             'SUSPENDED',
                             'INACTIVE'
                         ]:
-                            account_status = 'ACTIVE'
+                            raise ValueError(
+                                f'Invalid Account Status '
+                                f'"{account_status}". '
+                                f'Allowed values are: '
+                                f'ACTIVE, SUSPENDED, INACTIVE.'
+                            )
 
-                        # ---------------------------------------------
+                        # -----------------------------------------
                         # Calculate eligibility automatically
                         #
-                        # Eligible = Registered AND Account Status ACTIVE
-                        # ---------------------------------------------
+                        # Eligible =
+                        # Registered AND Account Status ACTIVE
+                        # -----------------------------------------
 
                         eligible = (
                             registered
                             and account_status == 'ACTIVE'
                         )
 
-                        # ---------------------------------------------
-                        # Create or update student profile
-                        # ---------------------------------------------
+                        # -----------------------------------------
+                        # Create or update StudentProfile
+                        # -----------------------------------------
 
-                        student, created = StudentProfile.objects.update_or_create(
-                            student_number=student_number,
-                            defaults={
-                                'full_name': full_name,
-                                'campus': campus,
-                                'faculty': faculty,
-                                'registered': registered,
-                                'eligible': eligible,
-                                'account_status': account_status
-                            }
+                        student, created = (
+                            StudentProfile.objects.update_or_create(
+                                student_number=student_number,
+                                defaults={
+                                    'full_name': full_name,
+                                    'campus': campus,
+                                    'faculty': faculty,
+                                    'registered': registered,
+                                    'eligible': eligible,
+                                    'account_status': account_status
+                                }
+                            )
                         )
 
                         success_count += 1
@@ -1039,7 +1256,7 @@ def import_students(request):
                         error_count += 1
 
                         errors.append(
-                            f"Row {index + 2}: {str(e)}"
+                            f'Row {index + 2}: {str(e)}'
                         )
 
                 # ---------------------------------------------
@@ -1062,7 +1279,8 @@ def import_students(request):
                 if success_count > 0:
                     messages.success(
                         request,
-                        f'Successfully imported {success_count} students!'
+                        f'Successfully imported '
+                        f'{success_count} students!'
                     )
 
                 # ---------------------------------------------
@@ -1073,7 +1291,7 @@ def import_students(request):
                     messages.warning(
                         request,
                         f'{error_count} rows had errors. '
-                        'Check the logs for details.'
+                        f'Check the displayed errors for details.'
                     )
 
                 # ---------------------------------------------
@@ -1082,7 +1300,10 @@ def import_students(request):
 
                 if errors:
                     for error in errors[:5]:
-                        messages.error(request, error)
+                        messages.error(
+                            request,
+                            error
+                        )
 
                 return redirect('admin_dashboard')
 
@@ -1110,6 +1331,7 @@ def import_students(request):
 def view_audit_logs(request):
     if not request.user.is_authenticated:
         return redirect('login')
+        
 
     if not request.user.is_staff:
         return redirect('dashboard')

@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
-
+from dotenv import load_dotenv
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -109,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Johannesburg'
 
 USE_I18N = True
 
@@ -127,8 +129,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Email Configuration
+# Email Configuration
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
+BREVO_SENDER_EMAIL = os.getenv('BREVO_SENDER_EMAIL')
+BREVO_SENDER_NAME = os.getenv(
+    'BREVO_SENDER_NAME',
+    'Live SRC Voting System'
+)
