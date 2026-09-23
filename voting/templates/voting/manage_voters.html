@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Voters</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 30px auto;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #666;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #343a40;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .back-button:hover {
+            background: #23272b;
+        }
+
+        .clear-button {
+            border: none;
+            padding: 10px 18px;
+            background: #dc3545;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-button:hover {
+            background: #b02a37;
+        }
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .success-message {
+            background: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-card strong {
+            font-size: 26px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .search-box {
+            width: 320px;
+            max-width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            background: #343a40;
+            color: white;
+            padding: 13px 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e5e5;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-yes {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-no {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .status-active {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-suspended {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-inactive {
+            background: #e2e3e5;
+            color: #41464b;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+
+        .clear-warning {
+            margin-top: 12px;
+            color: #842029;
+            font-size: 13px;
+        }
+
+        @media (max-width: 800px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top-actions {
+                align-items: stretch;
+            }
+
+            .back-button,
+            .clear-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Manage Voters</h1>
+        <p>
+            View and manage students registered in the voting system.
+        </p>
+    </div>
+
+    {% if error %}
+        <div class="message error-message">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="message success-message">
+            {{ success }}
+        </div>
+    {% endif %}
+
+    <div class="top-actions">
+
+        <a href="{% url 'admin_dashboard' %}" class="back-button">
+            Back to Admin Dashboard
+        </a>
+
+        <div>
+            <form method="POST"
+                  action="{% url 'clear_voters' %}"
+                  onsubmit="return confirm(
+                      'Are you sure you want to clear the voter list? ' +
+                      'This will remove the StudentProfile voter records ' +
+                      'but will preserve voting history.'
+                  );">
+
+                {% csrf_token %}
+
+                <button type="submit" class="clear-button">
+                    Clear Voter List
+                </button>
+            </form>
+
+            <div class="clear-warning">
+                Clearing is blocked while an election is scheduled or open.
+            </div>
+        </div>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3>Total Voters</h3>
+            <strong id="totalVoters">{{ voters|length }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <h3>Eligible Voters</h3>
+            <strong id="eligibleVoters">
+                {{  eligible_voters }}
+            </strong>
+        </div>
+
+        <div class="stat-card">
+            <h3>Displayed Results</h3>
+            <strong id="displayedVoters">
+                {{ voters|length }}
+            </strong>
+        </div>
+
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <h2>Student Voter List</h2>
+
+            <input
+                type="text"
+                id="searchInput"
+                class="search-box"
+                placeholder="Search student number, name, campus or faculty..."
+            >
+
+        </div>
+
+        <table id="votersTable">
+
+            <thead>
+                <tr>
+                    <th>Student Number</th>
+                    <th>Full Name</th>
+                    <th>Campus</th>
+                    <th>Faculty</th>
+                    <th>Registered</th>
+                    <th>Eligible</th>
+                    <th>Account Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for voter in voters %}
+
+                <tr class="voter-row">
+
+                    <td>{{ voter.student_number }}</td>
+
+                    <td>{{ voter.full_name }}</td>
+
+                    <td>{{ voter.campus }}</td>
+
+                    <td>{{ voter.faculty }}</td>
+
+                    <td>
+                        {% if voter.registered %}
+                            <span class="status status-yes">
+                                Yes
+                            </span>
+                        {% else %}
+                            <span class="status status-no">
+                                No
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if voter.eligible %}
+                            <span class="status status-yes">
+                                Yes
+                            </span>
+                        {% else %}
+                            <span class="status status-no">
+                                No
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        {% if voter.account_status == 'ACTIVE' %}
+
+                            <span class="status status-active">
+                                Active
+                            </span>
+
+                        {% elif voter.account_status == 'SUSPENDED' %}
+
+                            <span class="status status-suspended">
+                                Suspended
+                            </span>
+
+                        {% else %}
+
+                            <span class="status status-inactive">
+                                Inactive
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7" class="empty-message">
+                        No voters found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+    const searchInput = document.getElementById('searchInput');
+    const voterRows = document.querySelectorAll('.voter-row');
+    const displayedVoters = document.getElementById('displayedVoters');
+
+    searchInput.addEventListener('input', function () {
+
+        const searchTerm = this.value.toLowerCase().trim();
+
+        let visibleCount = 0;
+
+        voterRows.forEach(function (row) {
+
+            const rowText = row.textContent.toLowerCase();
+
+            if (rowText.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+
+        });
+
+        displayedVoters.textContent = visibleCount;
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -140,9 +140,10 @@
                         required
                         onchange="toggleCandidateCampus(${candidateNumber}, this.value)"
                     >
+
                         <option value="INSTITUTIONAL">Institutional SRC</option>
                         <option value="CAMPUS">Campus SRC</option>
-                    </select>
+                 </select>
                 </div>
 
                 <div class="form-group campus-group" id="candidate-campus-group-${candidateNumber}" hidden>
@@ -194,9 +195,12 @@
                 </div>
             `;
 
+
       container.appendChild(candidateCard);
       candidateCount++;
       updateCandidateCount();
+
+       
     }
 
     function toggleCandidateCampus(number, category) {
@@ -212,6 +216,31 @@
         campusInput.value = '';
       }
     }
+
+    function toggleCandidateCampus(number, category) {
+
+        const campusGroup = document.getElementById(
+            `candidate-campus-group-${number}`
+        );
+
+        const campusInput = document.getElementById(
+            `candidate-campus-${number}`
+        );
+
+        if (category === 'CAMPUS') {
+
+            campusGroup.style.display = 'block';
+            campusInput.required = true;
+
+        } else {
+
+            campusGroup.style.display = 'none';
+            campusInput.required = false;
+            campusInput.value = '';
+
+        }
+    }
+
 
     function removeCandidate(number) {
       const candidate = document.getElementById(`candidate-${number}`);
@@ -230,8 +259,11 @@
 
     addCandidate();
 
+
   </script>
 <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
+
 </body>
 
 </html>

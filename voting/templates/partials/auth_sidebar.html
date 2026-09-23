@@ -1,0 +1,84 @@
+<header class="app-topbar">
+  <button class="sidebar-toggle" type="button" aria-controls="auth-sidebar" aria-expanded="false" aria-label="Open navigation menu">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </button>
+  <span class="sidebar-topbar-title">Live SRC Voting System</span>
+</header>
+
+<aside class="auth-sidebar" id="auth-sidebar" aria-label="Authenticated navigation">
+  <div class="sidebar-heading">
+    <div>
+      <p class="sidebar-eyebrow">Navigation</p>
+      <h2>Account menu</h2>
+    </div>
+  </div>
+
+  <nav class="sidebar-links">
+    {% if request.user.is_staff %}
+    {% if request.resolver_match.url_name != 'admin_dashboard' %}
+    <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">⌂</span>
+      <span>Admin Dashboard</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'manage_elections' %}
+    <a href="{% url 'manage_elections' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">▦</span>
+      <span>Manage Elections</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'manage_voters' %}
+    <a href="{% url 'manage_voters' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">♙</span>
+      <span>Manage Voters</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'import_students' %}
+    <a href="{% url 'import_students' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">⇧</span>
+      <span>Import Students</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'view_audit_logs' %}
+    <a href="{% url 'view_audit_logs' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">☷</span>
+      <span>Audit Logs</span>
+    </a>
+    {% endif %}
+    {% else %}
+    {% if request.resolver_match.url_name != 'dashboard' %}
+    <a href="{% url 'dashboard' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">⌂</span>
+      <span>Student Dashboard</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'results' %}
+    <a href="{% url 'results' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">⌁</span>
+      <span>View Results</span>
+    </a>
+    {% endif %}
+    {% if request.resolver_match.url_name != 'profile' %}
+    <a href="{% url 'profile' %}" class="sidebar-link">
+      <span class="sidebar-link-icon" aria-hidden="true">♙</span>
+      <span>My Profile</span>
+    </a>
+    {% endif %}
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle sidebar-link" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+      <span class="sidebar-link-icon theme-toggle-icon" aria-hidden="true">◐</span>
+      <span class="theme-toggle-label">Dark mode</span>
+    </button>
+    <a href="{% url 'logout' %}" class="sidebar-link sidebar-logout">
+      <span class="sidebar-link-icon" aria-hidden="true">↪</span>
+      <span>Logout</span>
+    </a>
+  </div>
+</aside>
+
+<div class="sidebar-backdrop" aria-hidden="true"></div>

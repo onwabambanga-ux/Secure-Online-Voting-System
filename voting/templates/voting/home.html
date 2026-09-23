@@ -2,236 +2,172 @@
 <html lang="en">
 
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Online Voting System</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            color: white;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 8%;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 25px;
-        }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
-
-        .hero {
-            min-height: calc(100vh - 80px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .hero-content {
-            max-width: 800px;
-        }
-
-        .icon {
-            font-size: 70px;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 52px;
-            margin-bottom: 20px;
-        }
-
-        .subtitle {
-            font-size: 20px;
-            line-height: 1.6;
-            color: #dbeafe;
-            margin-bottom: 35px;
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 14px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .login-button {
-            background: white;
-            color: #1e3a8a;
-        }
-
-        .register-button {
-            background: #2563eb;
-            color: white;
-            border: 1px solid white;
-        }
-
-        .login-button:hover,
-        .register-button:hover {
-            opacity: 0.85;
-        }
-
-        .features {
-            margin-top: 50px;
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-
-        .feature {
-            max-width: 200px;
-        }
-
-        .feature h3 {
-            margin-bottom: 8px;
-        }
-
-        .feature p {
-            color: #bfdbfe;
-            line-height: 1.5;
-        }
-
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Online Voting System</title>
 </head>
 
-<body>
+<body class="home-page">
+  <nav class="home-navbar" aria-label="Main navigation">
+    <a class="home-brand" href="/" aria-label="Online Voting System home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+          <path d="m28 30 3 3 6-7"></path>
+        </svg>
+      </span>
+      <span>Online Voting System</span>
+    </a>
 
-    <nav>
+    <div class="home-nav-links">
+      <button class="home-theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+        <span class="home-theme-icon" aria-hidden="true">◐</span>
+        <span class="home-theme-label">Dark mode</span>
+      </button>
+      <a href="{% url 'login' %}">Login</a>
+      <a href="{% url 'register' %}" class="nav-register">Register</a>
+    </div>
+  </nav>
 
-        <div class="logo">
-            🗳️ Online Voting System
-        </div>
+  <main class="hero-section">
+    <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
+    <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
 
-        <div>
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register' %}">Register</a>
-        </div>
+    <section class="hero-content" aria-labelledby="home-title">
+      <div class="hero-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" role="img" focusable="false" aria-label="Voting ballot">
+          <rect x="15" y="9" width="34" height="46" rx="5" fill="none" stroke="currentColor" stroke-width="3.5"></rect>
+          <path d="M25 9V5h14v4" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+          <path d="M23 21h18M23 29h10" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+          <path d="m22 42 6 6 14-15" fill="none" stroke="currentColor" stroke-width="4.5"></path>
+        </svg>
+      </div>
 
-    </nav>
+      <p class="eyebrow">Your voice, securely counted</p>
 
+      <h1 id="home-title">Secure Online Voting</h1>
 
-    <section class="hero">
+      <p class="hero-subtitle">
+        A secure and convenient platform for participating in elections online.
+        Register, view elections, vote for your preferred candidate, and receive
+        confirmation of your vote.
+      </p>
 
-        <div class="hero-content">
+      <div class="hero-actions">
+        <a href="{% url 'login' %}" class="button primary-button">
+          Login
+          <span aria-hidden="true">→</span>
+        </a>
+        <a href="{% url 'register' %}" class="button secondary-button">
+          Create Account
+        </a>
+      </div>
 
-            <div class="icon">
-                🗳️
-            </div>
+      <div class="features" aria-label="Platform features">
+        <article class="feature-card">
+          <span class="feature-icon feature-icon-primary" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M12 3 5 6v5c0 4.6 2.9 8.2 7 10 4.1-1.8 7-5.4 7-10V6l-7-3Z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+          </span>
+          <div>
+            <h2>Secure</h2>
+            <p>Authentication and security controls protect voter accounts.</p>
+          </div>
+        </article>
 
-            <h1>
-                Secure Online Voting
-            </h1>
+        <article class="feature-card">
+          <span class="feature-icon feature-icon-success" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
+              <path d="m14 16 2 2 4-5"></path>
+            </svg>
+          </span>
+          <div>
+            <h2>Simple</h2>
+            <p>View elections and cast your vote through an easy-to-use interface.</p>
+          </div>
+        </article>
 
-            <p class="subtitle">
-                A secure and convenient platform for participating
-                in elections online. Register, view elections,
-                vote for your preferred candidate, and receive
-                confirmation of your vote.
-            </p>
-
-
-            <div class="buttons">
-
-                <a
-                    href="{% url 'login' %}"
-                    class="button login-button"
-                >
-                    Login
-                </a>
-
-                <a
-                    href="{% url 'register' %}"
-                    class="button register-button"
-                >
-                    Create Account
-                </a>
-
-            </div>
-
-
-            <div class="features">
-
-                <div class="feature">
-
-                    <h3>🔐 Secure</h3>
-
-                    <p>
-                        Authentication and security controls
-                        protect voter accounts.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <h3>🗳️ Simple</h3>
-
-                    <p>
-                        View elections and cast your vote
-                        through an easy-to-use interface.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <h3>📊 Transparent</h3>
-
-                    <p>
-                        Election results can be viewed
-                        when an election is officially closed.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
+        <article class="feature-card">
+          <span class="feature-icon feature-icon-warning" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M4 19V5M4 19h17"></path>
+              <path d="m7 15 4-4 3 2 5-6"></path>
+            </svg>
+          </span>
+          <div>
+            <h2>Transparent</h2>
+            <p>Election results can be viewed when an election is officially closed.</p>
+          </div>
+        </article>
+      </div>
     </section>
+  </main>
+  <script>
+    (function() {
+      const root = document.documentElement;
+      const button = document.querySelector('.home-theme-toggle');
 
+      if (!button) {
+        return;
+      }
+
+      const label = button.querySelector('.home-theme-label');
+      const icon = button.querySelector('.home-theme-icon');
+
+      function getSavedTheme() {
+        try {
+          return localStorage.getItem('voting-theme');
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function saveTheme(theme) {
+        try {
+          localStorage.setItem('voting-theme', theme);
+        } catch (error) {
+          // Continue working even when browser storage is unavailable.
+        }
+      }
+
+      function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        button.setAttribute('aria-pressed', String(isDark));
+        button.setAttribute(
+          'aria-label',
+          isDark ? 'Switch to light mode' : 'Switch to dark mode'
+        );
+
+        if (label) {
+          label.textContent = isDark ? 'Light mode' : 'Dark mode';
+        }
+
+        if (icon) {
+          icon.textContent = isDark ? '☀' : '◐';
+        }
+      }
+
+      const savedTheme = getSavedTheme();
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+      button.addEventListener('click', function(event) {
+        event.preventDefault();
+        const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        saveTheme(nextTheme);
+      });
+    }());
+  </script>
 </body>
 
 </html>

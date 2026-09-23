@@ -98,9 +98,12 @@ class StudentImportForm(forms.Form):
         help_text='Upload an .xlsx file with student details'
     )
 class CandidateForm(forms.ModelForm):
+
     class Meta:
         model = Candidate
         fields = [
+            'src_category',
+            'campus',
             'candidate_type',
             'name',
             'description',
@@ -108,20 +111,32 @@ class CandidateForm(forms.ModelForm):
         ]
 
         widgets = {
+            'src_category': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+
+            'campus': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter campus for Campus SRC candidate'
+            }),
+
             'candidate_type': forms.Select(attrs={
                 'class': 'form-control'
             }),
+
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Candidate or organization name'
             }),
+
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
                 'placeholder': 'Short description (optional)'
             }),
+
             'image': forms.ClearableFileInput(attrs={
                 'class': 'form-control',
                 'accept': 'image/*'
             }),
-        }    
+        }
