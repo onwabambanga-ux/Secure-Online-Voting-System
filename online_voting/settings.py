@@ -130,10 +130,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 # Email Configuration
-# Email Configuration
-BREVO_API_KEY = os.getenv('BREVO_API_KEY')
-BREVO_SENDER_EMAIL = os.getenv('BREVO_SENDER_EMAIL')
-BREVO_SENDER_NAME = os.getenv(
-    'BREVO_SENDER_NAME',
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL',
     'Live SRC Voting System'
 )
