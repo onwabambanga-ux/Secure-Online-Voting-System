@@ -96,50 +96,7 @@
     <section class="admin-management" aria-labelledby="management-title">
       <h2 id="management-title">System Management</h2>
 
+
       <div class="admin-management-buttons">
         <a href="{% url 'manage_elections' %}" class="admin-management-button">
           Manage Elections
-        </a>
-
-        <a href="{% url 'import_students' %}" class="admin-management-button success">
-          Import Students (Excel)
-        </a>
-
-        <a href="{% url 'results' %}" class="admin-management-button info">
-          View Results
-        </a>
-
-        <a href="{% url 'export_results_excel' %}" class="admin-management-button success">
-          Export Results (Excel)
-        </a>
-
-        <a href="{% url 'export_results_pdf' %}" class="admin-management-button success">
-          Export Results (PDF)
-        </a>
-
-        <a href="{% url 'manage_voters' %}" class="admin-management-button warning">
-          Manage Voters
-        </a>
-
-        <a href="{% url 'view_audit_logs' %}" class="admin-management-button danger">
-          View Audit Logs
-        </a>
-      </div>
-    </section>
-  </main>
-
-  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const progressBar = document.querySelector('.admin-progress-bar');
-
-      if (progressBar) {
-        const percentage = Number(progressBar.dataset.percentage) || 0;
-        progressBar.style.width = `${Math.min(Math.max(percentage, 0), 100)}%`;
-      }
-    });
-
-  </script>
-</body>
-
-</html>
