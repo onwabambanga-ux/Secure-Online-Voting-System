@@ -2,6 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
+
 urlpatterns = [
     path('', views.home, name='home'),
     
@@ -9,7 +10,9 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
-    
+    path('password-reset/',views.password_reset_request,name='password_reset'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='voting/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-complete/', views.password_reset_complete, name='password_reset_complete'),
     # Student URLs
     path('dashboard/', views.dashboard, name='dashboard'),
     path('vote/<int:election_id>/', views.vote, name='vote'),

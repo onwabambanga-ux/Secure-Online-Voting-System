@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, F
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, request
 from django.core.paginator import Paginator
 import pandas as pd
 from django.db import transaction, IntegrityError
@@ -14,6 +18,102 @@ from .models import Election, Candidate, StudentProfile, Vote, VoterReceipt, Aud
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from django.utils.dateparse import parse_datetime
+import requests
+from django.conf import settings
+
+from django.core.mail import send_mail
+
+
+def send_email(to_email, subject, message):
+    return send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [to_email],
+        fail_silently=False,
+    )
+
+def password_reset_request(request):
+
+    if request.method == 'POST':
+
+        email = request.POST.get('email', '').strip().lower()
+
+        try:
+            user = User.objects.get(
+                email__iexact=email,
+                student_profile__isnull=False,
+                student_profile__registered=True,
+                student_profile__account_status='ACTIVE'
+            )
+
+            uid = urlsafe_base64_encode(
+                force_bytes(user.pk)
+            )
+
+            token = default_token_generator.make_token(user)
+
+            reset_path = reverse(
+                'password_reset_confirm',
+                kwargs={
+                    'uidb64': uid,
+                    'token': token,
+                }
+            )
+
+            reset_link = request.build_absolute_uri(reset_path)
+
+            message = (
+                f'Hello {user.username},\n\n'
+                'We received a request to reset the password '
+                'for your Live SRC Voting System account.\n\n'
+                'Click the link below to create a new password:\n\n'
+                f'{reset_link}\n\n'
+                'If you did not request a password reset, '
+                'you can safely ignore this email.\n\n'
+                'For your security, this password reset link '
+                'can only be used once.\n\n'
+                'Thank you,\n'
+                'Live SRC Voting System'
+            )
+
+            try:
+                response = send_email(
+                    user.email,
+                    'Live SRC Voting System - Password Reset',
+                    message
+                )
+
+                if response.status_code != 201:
+                    pass
+
+            except requests.RequestException:
+                pass
+
+        except User.DoesNotExist:
+            pass
+
+        messages.success(
+            request,
+            'If an eligible student account exists with that email address, '
+            'a password reset link has been sent.'
+        )
+
+        return redirect('login')
+
+    return render(
+        request,
+        'voting/password_reset.html'
+    )
+def password_reset_complete(request):
+
+    messages.success(
+        request,
+        'Your password has been changed successfully. '
+        'You can now log in with your new password.'
+    )
+
+    return redirect('login')
 
 def home(request):
     return render(request, 'voting/home.html')
@@ -70,13 +170,41 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            
+
             AuditLog.objects.create(
                 user=user,
                 action='REGISTER',
                 description=f'User {user.username} registered'
             )
-            
+
+            # Send registration confirmation email
+            try:
+                response = send_email(
+                    user.email,
+                    'Welcome to the Live SRC Voting System',
+                    (
+                        f'Hello {user.username},\n\n'
+                        'Your account has been successfully created '
+                        'for the Live SRC Voting System.\n\n'
+                        'You can now log in and participate in eligible '
+                        'SRC elections when voting is open.\n\n'
+                        'Thank you,\n'
+                        'Live SRC Voting System'
+                    )
+                )
+
+                if response.status_code != 201:
+                    messages.warning(
+                        request,
+                        'Your account was created, but the confirmation email could not be sent.'
+                    )
+
+            except requests.RequestException:
+                messages.warning(
+                    request,
+                    'Your account was created, but the confirmation email could not be sent.'
+                )
+
             messages.success(
                 request,
                 'Your account has been created successfully!'
@@ -204,7 +332,6 @@ def vote(request, election_id):
         )
         return redirect('dashboard')
 
-
     # ==========================================================
     # GET CANDIDATES SEPARATELY
     # ==========================================================
@@ -217,7 +344,6 @@ def vote(request, election_id):
         src_category='CAMPUS',
         campus=student_profile.campus
     )
-
 
     # ==========================================================
     # PROCESS SUBMITTED VOTES
@@ -232,7 +358,6 @@ def vote(request, election_id):
         campus_candidate_id = request.POST.get(
             'campus_candidate'
         )
-
 
         # ======================================================
         # BOTH SELECTIONS ARE REQUIRED
@@ -258,7 +383,6 @@ def vote(request, election_id):
                 election_id=election.id
             )
 
-
         # ======================================================
         # VERIFY INSTITUTIONAL CANDIDATE
         # ======================================================
@@ -270,7 +394,6 @@ def vote(request, election_id):
             src_category='INSTITUTIONAL'
         )
 
-
         # ======================================================
         # VERIFY CAMPUS CANDIDATE
         # ======================================================
@@ -281,9 +404,7 @@ def vote(request, election_id):
             election=election,
             src_category='CAMPUS',
             campus=student_profile.campus
-            
         )
-
 
         # ======================================================
         # SAVE BOTH VOTES
@@ -306,7 +427,6 @@ def vote(request, election_id):
                     src_category='INSTITUTIONAL'
                 )
 
-
                 # ------------------------------------------------
                 # INSTITUTIONAL ANONYMOUS BALLOT
                 # ------------------------------------------------
@@ -316,7 +436,6 @@ def vote(request, election_id):
                     candidate=institutional_candidate,
                     src_category='INSTITUTIONAL'
                 )
-
 
                 # ------------------------------------------------
                 # CAMPUS RECEIPT
@@ -328,7 +447,6 @@ def vote(request, election_id):
                     src_category='CAMPUS'
                 )
 
-
                 # ------------------------------------------------
                 # CAMPUS ANONYMOUS BALLOT
                 # ------------------------------------------------
@@ -338,7 +456,6 @@ def vote(request, election_id):
                     candidate=campus_candidate,
                     src_category='CAMPUS'
                 )
-
 
                 # ------------------------------------------------
                 # AUDIT LOG
@@ -353,7 +470,6 @@ def vote(request, election_id):
                     )
                 )
 
-
         except IntegrityError:
 
             messages.error(
@@ -363,6 +479,43 @@ def vote(request, election_id):
 
             return redirect('dashboard')
 
+        # ======================================================
+        # SEND VOTING CONFIRMATION EMAIL
+        #
+        # The email confirms participation only.
+        # It does NOT reveal candidate selections.
+        # ======================================================
+
+        try:
+
+            response = send_email(
+                request.user.email,
+                'Live SRC Voting System - Vote Recorded',
+                (
+                    f'Hello {student_profile.full_name},\n\n'
+                    f'Your vote in the election "{election.title}" '
+                    'has been successfully recorded.\n\n'
+                    'Your Institutional SRC and Campus SRC ballots '
+                    'have been received.\n\n'
+                    'For privacy and anonymity, this email does not '
+                    'contain your candidate selections.\n\n'
+                    'Thank you for participating in the election.\n\n'
+                    'Live SRC Voting System'
+                )
+            )
+
+            if response.status_code != 201:
+                messages.warning(
+                    request,
+                    'Your votes were recorded, but the confirmation email could not be sent.'
+                )
+
+        except requests.RequestException:
+
+            messages.warning(
+                request,
+                'Your votes were recorded, but the confirmation email could not be sent.'
+            )
 
         # ======================================================
         # SUCCESS MESSAGE
@@ -374,7 +527,6 @@ def vote(request, election_id):
         )
 
         return redirect('dashboard')
-
 
     # ==========================================================
     # DISPLAY VOTING PAGE
@@ -389,7 +541,6 @@ def vote(request, election_id):
             'campus_candidates': campus_candidates,
         }
     )
-
 @login_required(login_url='login')
 def results(request):
 
@@ -629,7 +780,11 @@ def admin_dashboard(request):
 
     total_elections = Election.objects.count()
     total_candidates = Candidate.objects.count()
-    total_voters = User.objects.filter(is_staff=False).count()
+    total_voters = StudentProfile.objects.filter(
+        eligible=True,
+        registered=True,
+        account_status='ACTIVE'
+    ).count()
 
     # Voting statistics
     total_votes = Vote.objects.count()
@@ -2197,14 +2352,12 @@ def manage_voters(request):
         return redirect('dashboard')
 
     voters = StudentProfile.objects.all().order_by('student_number')
+    eligible_voters = StudentProfile.objects.filter(eligible=True).count()
 
-    return render(
-        request,
-        'voting/manage_voters.html',
-        {
-            'voters': voters,
-        }
-    )
+    return render(request, 'voting/manage_voters.html', {
+        'voters': voters,
+        'eligible_voters': eligible_voters,
+    })
 
 
 @login_required(login_url='login')
