@@ -78,14 +78,12 @@ def password_reset_request(request):
             )
 
             try:
-                response = send_email(
+                 send_email(
                     user.email,
                     'Live SRC Voting System - Password Reset',
                     message
                 )
 
-                if response.status_code != 201:
-                    pass
 
             except requests.RequestException:
                 pass
