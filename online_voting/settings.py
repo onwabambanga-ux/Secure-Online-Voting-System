@@ -22,7 +22,7 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%v(hnog$3q19lwf%it1gx!&8-le@mwml53v9lz5rbw$l8^)a4i'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -75,15 +75,12 @@ WSGI_APPLICATION = 'online_voting.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'online_voting_db',
-        'USER': 'root',
-        'PASSWORD': 'Tshezi@05',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default='mysql://root:Tshezi@05@localhost:3306/online_voting_db'
+    )
 }
 
 
