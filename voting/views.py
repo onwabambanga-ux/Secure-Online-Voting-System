@@ -23,6 +23,38 @@ from django.conf import settings
 
 from django.core.mail import send_mail
 
+def send_brevo_email(to_email, subject, message):
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    data = {
+        "sender": {
+            "name": settings.BREVO_SENDER_NAME,
+            "email": settings.BREVO_SENDER_EMAIL,
+        },
+        "to": [
+            {
+                "email": to_email,
+            }
+        ],
+        "subject": subject,
+        "textContent": message,
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json=data,
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    return response
 
 def send_email(to_email, subject, message):
     return send_mail(
@@ -78,7 +110,7 @@ def password_reset_request(request):
             )
 
             try:
-                 send_email(
+                 send_brevo_email(
                     user.email,
                     'Live SRC Voting System - Password Reset',
                     message
