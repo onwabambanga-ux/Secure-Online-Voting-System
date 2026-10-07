@@ -141,12 +141,41 @@ def home(request):
 
 
 def user_login(request):
+
     if request.user.is_authenticated and request.method == 'GET':
+
         if request.user.is_staff:
             return redirect('admin_dashboard')
+
+        # Verify that the logged-in voter still has
+        # a valid StudentProfile.
+        try:
+            profile = request.user.student_profile
+
+            if (
+                not profile.registered
+                or not profile.eligible
+                or profile.account_status != 'ACTIVE'
+            ):
+                logout(request)
+                messages.error(
+                    request,
+                    'Your voter account is no longer active or eligible.'
+                )
+                return redirect('login')
+
+        except StudentProfile.DoesNotExist:
+            logout(request)
+            messages.error(
+                request,
+                'Your voter registration could not be found.'
+            )
+            return redirect('login')
+
         return redirect('dashboard')
 
     if request.method == 'POST':
+
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -157,27 +186,97 @@ def user_login(request):
         )
 
         if user is not None:
+
+            # Staff/admin accounts are allowed to log in
+            # without a StudentProfile.
+            if user.is_staff:
+                login(request, user)
+
+                AuditLog.objects.create(
+                    user=user,
+                    action='LOGIN',
+                    description=f'User {user.username} logged in'
+                )
+
+                return redirect('admin_dashboard')
+
+            # Every normal voter MUST have a StudentProfile.
+            try:
+                profile = user.student_profile
+
+            except StudentProfile.DoesNotExist:
+
+                return render(
+                    request,
+                    'voting/login.html',
+                    {
+                        'error': (
+                            'Your voter account is not currently '
+                            'registered in the official student list.'
+                        )
+                    }
+                )
+
+            # Check the official voter status.
+            if not profile.registered:
+
+                return render(
+                    request,
+                    'voting/login.html',
+                    {
+                        'error': (
+                            'Your voter registration is not active.'
+                        )
+                    }
+                )
+
+            if not profile.eligible:
+
+                return render(
+                    request,
+                    'voting/login.html',
+                    {
+                        'error': (
+                            'You are not currently eligible to vote.'
+                        )
+                    }
+                )
+
+            if profile.account_status != 'ACTIVE':
+
+                return render(
+                    request,
+                    'voting/login.html',
+                    {
+                        'error': (
+                            'Your voter account is not active.'
+                        )
+                    }
+                )
+
+            # Only now is the voter allowed to log in.
             login(request, user)
-            
+
             AuditLog.objects.create(
                 user=user,
                 action='LOGIN',
                 description=f'User {user.username} logged in'
             )
 
-            if user.is_staff:
-                return redirect('admin_dashboard')
-
             return redirect('dashboard')
 
         return render(
             request,
             'voting/login.html',
-            {'error': 'Invalid username or password.'}
+            {
+                'error': 'Invalid username or password.'
+            }
         )
 
-    return render(request, 'voting/login.html')
-
+    return render(
+        request,
+        'voting/login.html'
+    )
 
 def register(request):
     if request.user.is_authenticated and request.method == 'GET':
