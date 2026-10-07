@@ -21,7 +21,7 @@ from django.utils.dateparse import parse_datetime
 import requests
 from django.conf import settings
 
-from django.core.mail import send_mail
+
 
 def send_brevo_email(to_email, subject, message):
     url = "https://api.brevo.com/v3/smtp/email"
@@ -55,15 +55,6 @@ def send_brevo_email(to_email, subject, message):
     response.raise_for_status()
 
     return response
-
-def send_email(to_email, subject, message):
-    return send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [to_email],
-        fail_silently=False,
-    )
 
 def password_reset_request(request):
 
@@ -209,7 +200,7 @@ def register(request):
 
             # Send registration confirmation email
             try:
-                response = send_email(
+                response = send_brevo_email(
                     user.email,
                     'Welcome to the Live SRC Voting System',
                     (
@@ -518,7 +509,7 @@ def vote(request, election_id):
 
         try:
 
-            response = send_email(
+            response = send_brevo_email(
                 request.user.email,
                 'Live SRC Voting System - Vote Recorded',
                 (
