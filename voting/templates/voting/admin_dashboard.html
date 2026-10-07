@@ -5,17 +5,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% load static %}
+
   <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
   <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <title>Administrator Dashboard | Secure Online Voting System</title>
 </head>
 
 <body class="admin-dashboard-page auth-sidebar-page">
+
   {% include 'partials/auth_sidebar.html' %}
 
+  <!-- =========================
+       ADMIN NAVIGATION
+  ========================== -->
   <header class="navbar admin-dashboard-navbar">
+
     <a class="brand" href="{% url 'admin_dashboard' %}">
+
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 48 48" role="img" focusable="false">
           <rect x="10" y="6" width="28" height="36" rx="4"></rect>
@@ -23,80 +32,339 @@
           <path d="m28 30 3 3 6-7"></path>
         </svg>
       </span>
+
       <span>Secure Online Voting</span>
+
     </a>
 
     <nav class="navbar-right" aria-label="Administrator navigation">
-      <span class="role-label">Administrator</span>
-      <a href="{% url 'logout' %}" class="logout">Logout</a>
+
+      <span class="role-label">
+        Administrator
+      </span>
+
+      <a href="{% url 'logout' %}" class="logout">
+        Logout
+      </a>
+
     </nav>
+
   </header>
 
+
+  <!-- =========================
+       MAIN DASHBOARD
+  ========================== -->
   <main class="admin-dashboard-container">
-    <section class="admin-welcome" aria-labelledby="admin-dashboard-title">
-      <p class="eyebrow">Administration portal</p>
-      <h1 id="admin-dashboard-title">Administrator Dashboard</h1>
-      <p>
-        Welcome, {{ request.user.username }}. Manage elections, candidates, voters, and results from here.
+
+
+    <!-- =========================
+         WELCOME SECTION
+    ========================== -->
+    <section
+      class="admin-welcome"
+      aria-labelledby="admin-dashboard-title"
+    >
+
+      <p class="eyebrow">
+        Administration portal
       </p>
+
+      <h1 id="admin-dashboard-title">
+        Administrator Dashboard
+      </h1>
+
+      <p>
+        Welcome, {{ request.user.username }}.
+        Manage elections, candidates, voters, and results from here.
+      </p>
+
     </section>
 
-    <section class="admin-summary-cards" aria-label="System summary">
+
+    <!-- =========================
+         SYSTEM SUMMARY
+    ========================== -->
+    <section
+      class="admin-summary-cards"
+      aria-label="System summary"
+    >
+
+      <!-- Total Elections -->
       <article class="admin-card">
-        <span class="admin-card-icon" aria-hidden="true">🗳️</span>
-        <h2>Total Elections</h2>
-        <strong class="admin-card-number">{{ total_elections }}</strong>
+
+        <span
+          class="admin-card-icon"
+          aria-hidden="true"
+        >
+          🗳️
+        </span>
+
+        <h2>
+          Total Elections
+        </h2>
+
+        <strong class="admin-card-number">
+          {{ total_elections }}
+        </strong>
+
       </article>
 
+
+      <!-- Total Candidates -->
       <article class="admin-card">
-        <span class="admin-card-icon" aria-hidden="true">👤</span>
-        <h2>Total Candidates</h2>
-        <strong class="admin-card-number">{{ total_candidates }}</strong>
+
+        <span
+          class="admin-card-icon"
+          aria-hidden="true"
+        >
+          👤
+        </span>
+
+        <h2>
+          Total Candidates
+        </h2>
+
+        <strong class="admin-card-number">
+          {{ total_candidates }}
+        </strong>
+
       </article>
 
+
+      <!-- Total Voters -->
       <article class="admin-card">
-        <span class="admin-card-icon" aria-hidden="true">👥</span>
-        <h2>Total Voters</h2>
-        <strong class="admin-card-number">{{ total_voters }}</strong>
+
+        <span
+          class="admin-card-icon"
+          aria-hidden="true"
+        >
+          👥
+        </span>
+
+        <h2>
+          Total Voters
+        </h2>
+
+        <strong class="admin-card-number">
+          {{ total_voters }}
+        </strong>
+
       </article>
+
     </section>
 
-    <section class="admin-statistics" aria-labelledby="statistics-title">
-      <h2 id="statistics-title">📊 Voting Statistics</h2>
+
+    <!-- =========================
+         VOTING STATISTICS
+    ========================== -->
+    <section
+      class="admin-statistics"
+      aria-labelledby="statistics-title"
+    >
+
+      <h2 id="statistics-title">
+        📊 Voting Statistics
+      </h2>
+
 
       <div class="admin-statistics-grid">
+
+
+        <!-- Students Who Voted -->
         <article class="admin-stat-box">
-          <h3>Students Who Voted</h3>
-          <strong class="admin-stat-number">{{ students_voted }}</strong>
+
+          <h3>
+            Students Who Voted
+          </h3>
+
+          <strong class="admin-stat-number">
+            {{ students_voted }}
+          </strong>
+
         </article>
 
+
+        <!-- Students Who Have Not Voted -->
         <article class="admin-stat-box">
-          <h3>Students Who Have Not Voted</h3>
-          <strong class="admin-stat-number">{{ students_not_voted }}</strong>
+
+          <h3>
+            Students Who Have Not Voted
+          </h3>
+
+          <strong class="admin-stat-number">
+            {{ students_not_voted }}
+          </strong>
+
         </article>
 
+
+        <!-- Total Vote Records -->
         <article class="admin-stat-box">
-          <h3>Total Vote Records</h3>
-          <strong class="admin-stat-number">{{ total_votes }}</strong>
+
+          <h3>
+            Total Vote Records
+          </h3>
+
+          <strong class="admin-stat-number">
+            {{ total_votes }}
+          </strong>
+
         </article>
+
       </div>
 
+
+      <!-- Participation Progress -->
       <div class="admin-progress">
+
         <div class="admin-progress-label">
-          <span>Overall Voting Participation</span>
-          <span>{{ voting_percentage }}%</span>
+
+          <span>
+            Overall Voting Participation
+          </span>
+
+          <span>
+            {{ voting_percentage }}%
+          </span>
+
         </div>
 
-        <div class="admin-progress-background" aria-label="{{ voting_percentage }} percent participation">
-          <div class="admin-progress-bar" data-percentage="{{ voting_percentage }}"></div>
+
+        <div
+          class="admin-progress-background"
+          aria-label="{{ voting_percentage }} percent participation"
+        >
+
+          <div
+            class="admin-progress-bar"
+            data-percentage="{{ voting_percentage }}"
+          ></div>
+
         </div>
+
       </div>
+
     </section>
 
-    <section class="admin-management" aria-labelledby="management-title">
-      <h2 id="management-title">System Management</h2>
+
+    <!-- =========================
+         SYSTEM MANAGEMENT
+    ========================== -->
+    <section
+      class="admin-management"
+      aria-labelledby="management-title"
+    >
+
+      <h2 id="management-title">
+        System Management
+      </h2>
 
 
       <div class="admin-management-buttons">
-        <a href="{% url 'manage_elections' %}" class="admin-management-button">
+
+
+        <!-- Manage Elections -->
+        <a
+          href="{% url 'manage_elections' %}"
+          class="admin-management-button"
+        >
           Manage Elections
+        </a>
+
+
+        <!-- Import Students -->
+        <a
+          href="{% url 'import_students' %}"
+          class="admin-management-button success"
+        >
+          Import Students (Excel)
+        </a>
+
+
+        <!-- View Results -->
+        <a
+          href="{% url 'results' %}"
+          class="admin-management-button info"
+        >
+          View Results
+        </a>
+
+
+        <!-- Export Results Excel -->
+        <a
+          href="{% url 'export_results_excel' %}"
+          class="admin-management-button success"
+        >
+          Export Results (Excel)
+        </a>
+
+
+        <!-- Export Results PDF -->
+        <a
+          href="{% url 'export_results_pdf' %}"
+          class="admin-management-button success"
+        >
+          Export Results (PDF)
+        </a>
+
+
+        <!-- Manage Voters -->
+        <a
+          href="{% url 'manage_voters' %}"
+          class="admin-management-button warning"
+        >
+          Manage Voters
+        </a>
+
+
+        <!-- View Audit Logs -->
+        <a
+          href="{% url 'view_audit_logs' %}"
+          class="admin-management-button danger"
+        >
+          View Audit Logs
+        </a>
+
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       SIDEBAR / THEME JAVASCRIPT
+  ========================== -->
+  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
+
+  <!-- =========================
+       PARTICIPATION BAR
+  ========================== -->
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const progressBar =
+        document.querySelector('.admin-progress-bar');
+
+
+      if (progressBar) {
+
+        const percentage =
+          Number(progressBar.dataset.percentage) || 0;
+
+        progressBar.style.width =
+          `${Math.min(Math.max(percentage, 0), 100)}%`;
+
+      }
+
+    });
+
+  </script>
+
+</body>
+
+</html>
