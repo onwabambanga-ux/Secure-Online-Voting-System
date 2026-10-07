@@ -2,237 +2,794 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
-  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Vote | Live SRC Voting System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Vote | Live SRC Voting System</title>
+
+    <style>
+        /* Election logo */
+        .election-logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .election-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .election-logo {
+                width: 90px;
+                height: 90px;
+            }
+        }
+    </style>
+
 </head>
 
 <body class="vote-page auth-sidebar-page">
-  {% include 'partials/auth_sidebar.html' %}
-  <header class="navbar vote-navbar">
-    <a class="brand" href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" role="img" focusable="false">
-          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
-          <path d="M16 14h16M16 21h16M16 28h8"></path>
-          <path d="m28 30 3 3 6-7"></path>
-        </svg>
-      </span>
-      <span>Live SRC Voting System</span>
-    </a>
 
-    <nav class="navbar-right" aria-label="Voting navigation">
-      {% if request.user.is_staff %}
-      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
-      {% else %}
-      <a href="{% url 'dashboard' %}" class="back-link">Student Dashboard</a>
-      {% endif %}
-      <a href="{% url 'logout' %}" class="logout">Logout</a>
-    </nav>
-  </header>
+    {% include 'partials/auth_sidebar.html' %}
 
-  <main class="container vote-container">
-    <section class="election-card" aria-labelledby="election-title">
-      <div class="section-kicker">Active election</div>
-      <h1 id="election-title">{{ election.title }}</h1>
-      <p class="election-description">{{ election.description }}</p>
+    <header class="navbar vote-navbar">
 
-      <div class="election-meta">
-        <div>
-          <span class="meta-label">Election type</span>
-          <strong>{{ election.get_election_type_display }}</strong>
-        </div>
-        {% if election.campus %}
-        <div>
-          <span class="meta-label">Campus</span>
-          <strong>{{ election.campus }}</strong>
-        </div>
-        {% endif %}
-        <div>
-          <span class="meta-label">Status</span>
-          <strong>{{ election.get_status_display }}</strong>
-        </div>
-        <div>
-          <span class="meta-label">Voting period</span>
-          <strong>{{ election.start_date }} to {{ election.end_date }}</strong>
-        </div>
-      </div>
-    </section>
+        <a
+            class="brand"
+            href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}"
+        >
 
-    <aside class="warning-box" role="note">
-      <span class="notice-icon" aria-hidden="true">!</span>
-      <p>
-        <strong>Important:</strong>
-        Select <strong>one</strong> organization or candidate for <strong>Institutional SRC</strong> and
-        <strong>one</strong> for <strong>Campus SRC</strong>. Once submitted, your vote cannot be changed.
-        Please verify both selections carefully.
-      </p>
-    </aside>
+            <span class="brand-mark" aria-hidden="true">
 
-    {% if messages %}
-    <section class="messages" aria-live="polite">
-      {% for message in messages %}
-      <div class="message {% if message.tags %}message-{{ message.tags }}{% endif %}">
-        {{ message }}
-      </div>
-      {% endfor %}
-    </section>
-    {% endif %}
+                <svg viewBox="0 0 48 48" role="img" focusable="false">
+                    <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+                    <path d="M16 14h16M16 21h16M16 28h8"></path>
+                    <path d="m28 30 3 3 6-7"></path>
+                </svg>
 
-    {% if institutional_candidates or campus_candidates %}
-    <form method="POST" id="vote-form">
-      {% csrf_token %}
-
-      <section class="candidate-section" aria-labelledby="institutional-title">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Institutional division</p>
-            <h2 id="institutional-title">Institutional SRC</h2>
-          </div>
-          <span class="section-number">01</span>
-        </div>
-        <p class="section-instruction">Select one organization or candidate for Institutional SRC.</p>
-
-        {% if institutional_candidates %}
-        <div class="candidate-list">
-          {% for candidate in institutional_candidates %}
-          <label class="candidate-card" for="institutional-candidate-{{ candidate.id }}">
-            <input type="radio" id="institutional-candidate-{{ candidate.id }}" name="institutional_candidate" value="{{ candidate.id }}" class="radio-input" required>
-            <span class="selection-indicator" aria-hidden="true">✓</span>
-            {% if candidate.image %}
-            <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" class="candidate-image">
-            {% else %}
-            <span class="candidate-image-placeholder" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img" focusable="false">
-                <circle cx="12" cy="8" r="3"></circle>
-                <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
-              </svg>
             </span>
-            {% endif %}
-            <span class="candidate-name">{{ candidate.name }}</span>
-            <span class="candidate-type">{{ candidate.get_candidate_type_display }}</span>
-            {% if candidate.description %}
-            <span class="candidate-description">{{ candidate.description }}</span>
-            {% endif %}
-          </label>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="no-candidates">No Institutional SRC candidates are available.</div>
-        {% endif %}
-      </section>
 
-      <section class="candidate-section" aria-labelledby="campus-title">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Campus division</p>
-            <h2 id="campus-title">Campus SRC</h2>
-          </div>
-          <span class="section-number">02</span>
-        </div>
-        <p class="section-instruction">Select one organization or candidate for Campus SRC.</p>
-
-        {% if campus_candidates %}
-        <div class="candidate-list">
-          {% for candidate in campus_candidates %}
-          <label class="candidate-card" for="campus-candidate-{{ candidate.id }}">
-            <input type="radio" id="campus-candidate-{{ candidate.id }}" name="campus_candidate" value="{{ candidate.id }}" class="radio-input" required>
-            <span class="selection-indicator" aria-hidden="true">✓</span>
-            {% if candidate.image %}
-            <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" class="candidate-image">
-            {% else %}
-            <span class="candidate-image-placeholder" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img" focusable="false">
-                <circle cx="12" cy="8" r="3"></circle>
-                <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
-              </svg>
+            <span>
+                Live SRC Voting System
             </span>
+
+        </a>
+
+
+        <nav class="navbar-right" aria-label="Voting navigation">
+
+            {% if request.user.is_staff %}
+
+                <a
+                    href="{% url 'admin_dashboard' %}"
+                    class="back-link"
+                >
+                    Admin Dashboard
+                </a>
+
+            {% else %}
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="back-link"
+                >
+                    Student Dashboard
+                </a>
+
             {% endif %}
-            <span class="candidate-name">{{ candidate.name }}</span>
-            <span class="candidate-type">{{ candidate.get_candidate_type_display }}</span>
-            {% if candidate.description %}
-            <span class="candidate-description">{{ candidate.description }}</span>
+
+            <a
+                href="{% url 'logout' %}"
+                class="logout"
+            >
+                Logout
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <main class="container vote-container">
+
+        <section
+            class="election-card"
+            aria-labelledby="election-title"
+        >
+
+            <!-- ============================== -->
+            <!-- ELECTION LOGO -->
+            <!-- ============================== -->
+
+            {% if election.logo %}
+
+                <div class="election-logo-container">
+
+                    <img
+                        src="{{ election.logo.url }}"
+                        alt="{{ election.title }} logo"
+                        class="election-logo"
+                    >
+
+                </div>
+
             {% endif %}
-          </label>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="no-candidates">No Campus SRC candidates are available.</div>
+
+
+            <!-- ============================== -->
+            <!-- ELECTION INFORMATION -->
+            <!-- ============================== -->
+
+            <div class="section-kicker">
+                Active election
+            </div>
+
+            <h1 id="election-title">
+                {{ election.title }}
+            </h1>
+
+            <p class="election-description">
+                {{ election.description }}
+            </p>
+
+
+            <div class="election-meta">
+
+                <div>
+
+                    <span class="meta-label">
+                        Election type
+                    </span>
+
+                    <strong>
+                        {{ election.get_election_type_display }}
+                    </strong>
+
+                </div>
+
+
+                {% if election.campus %}
+
+                    <div>
+
+                        <span class="meta-label">
+                            Campus
+                        </span>
+
+                        <strong>
+                            {{ election.campus }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div>
+
+                    <span class="meta-label">
+                        Status
+                    </span>
+
+                    <strong>
+                        {{ election.get_status_display }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span class="meta-label">
+                        Voting period
+                    </span>
+
+                    <strong>
+                        {{ election.start_date }}
+                        to
+                        {{ election.end_date }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- WARNING -->
+        <!-- ============================== -->
+
+        <aside
+            class="warning-box"
+            role="note"
+        >
+
+            <span
+                class="notice-icon"
+                aria-hidden="true"
+            >
+                !
+            </span>
+
+            <p>
+
+                <strong>Important:</strong>
+
+                Select <strong>one</strong> organization or candidate for
+                <strong>Institutional SRC</strong> and
+                <strong>one</strong> for
+                <strong>Campus SRC</strong>.
+
+                Once submitted, your vote cannot be changed.
+
+                Please verify both selections carefully.
+
+            </p>
+
+        </aside>
+
+
+        <!-- ============================== -->
+        <!-- MESSAGES -->
+        <!-- ============================== -->
+
+        {% if messages %}
+
+            <section
+                class="messages"
+                aria-live="polite"
+            >
+
+                {% for message in messages %}
+
+                    <div
+                        class="message {% if message.tags %}message-{{ message.tags }}{% endif %}"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </section>
+
         {% endif %}
-      </section>
 
-      <section class="submit-section" aria-label="Submit vote">
-        <div class="selected-vote-info" id="selected-info" hidden>
-          <strong>Both selections have been made.</strong>
-          <span>Please verify your choices before submitting your vote.</span>
-        </div>
-        <button type="submit" class="submit-button" id="submit-btn">Submit Your Vote</button>
-      </section>
-    </form>
-    {% else %}
-    <section class="no-candidates empty-voting-state">
-      <span class="empty-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" role="img" focusable="false">
-          <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
-        </svg>
-      </span>
-      <h2>No candidates available</h2>
-      <p>There are currently no candidates registered for this election.</p>
-      <a href="{% url 'dashboard' %}" class="return-button">Back to Dashboard</a>
-    </section>
-    {% endif %}
-  </main>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const candidateCards = document.querySelectorAll('.candidate-card');
-      const selectedInfo = document.getElementById('selected-info');
-      const form = document.getElementById('vote-form');
+        <!-- ============================== -->
+        <!-- VOTING FORM -->
+        <!-- ============================== -->
 
-      candidateCards.forEach(function(card) {
-        const radio = card.querySelector('input[type="radio"]');
+        {% if institutional_candidates or campus_candidates %}
 
-        radio.addEventListener('change', function() {
-          document.querySelectorAll('input[name="' + radio.name + '"]').forEach(function(input) {
-            input.closest('.candidate-card').classList.remove('selected');
-          });
+            <form
+                method="POST"
+                id="vote-form"
+            >
 
-          card.classList.add('selected');
+                {% csrf_token %}
 
-          const institutionalSelected = document.querySelector('input[name="institutional_candidate"]:checked');
-          const campusSelected = document.querySelector('input[name="campus_candidate"]:checked');
 
-          if (selectedInfo) {
-            selectedInfo.hidden = !(institutionalSelected && campusSelected);
-          }
-        });
-      });
+                <!-- ============================== -->
+                <!-- INSTITUTIONAL SRC -->
+                <!-- ============================== -->
 
-      if (form) {
-        form.addEventListener('submit', function(event) {
-          const institutionalSelected = document.querySelector('input[name="institutional_candidate"]:checked');
-          const campusSelected = document.querySelector('input[name="campus_candidate"]:checked');
+                <section
+                    class="candidate-section"
+                    aria-labelledby="institutional-title"
+                >
 
-          if (!institutionalSelected) {
-            event.preventDefault();
-            alert('Please select ONE Institutional SRC organization/candidate.');
-            return;
-          }
+                    <div class="section-heading">
 
-          if (!campusSelected) {
-            event.preventDefault();
-            alert('Please select ONE Campus SRC organization/candidate.');
-          }
-        });
-      }
-    });
+                        <div>
 
-  </script>
-<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+                            <p class="section-kicker">
+                                Institutional division
+                            </p>
+
+                            <h2 id="institutional-title">
+                                Institutional SRC
+                            </h2>
+
+                        </div>
+
+                        <span class="section-number">
+                            01
+                        </span>
+
+                    </div>
+
+
+                    <p class="section-instruction">
+                        Select one organization or candidate for Institutional SRC.
+                    </p>
+
+
+                    {% if institutional_candidates %}
+
+                        <div class="candidate-list">
+
+                            {% for candidate in institutional_candidates %}
+
+                                <label
+                                    class="candidate-card"
+                                    for="institutional-candidate-{{ candidate.id }}"
+                                >
+
+                                    <input
+                                        type="radio"
+                                        id="institutional-candidate-{{ candidate.id }}"
+                                        name="institutional_candidate"
+                                        value="{{ candidate.id }}"
+                                        class="radio-input"
+                                        required
+                                    >
+
+
+                                    <span
+                                        class="selection-indicator"
+                                        aria-hidden="true"
+                                    >
+                                        ✓
+                                    </span>
+
+
+                                    {% if candidate.image %}
+
+                                        <img
+                                            src="{{ candidate.image.url }}"
+                                            alt="{{ candidate.name }}"
+                                            class="candidate-image"
+                                        >
+
+                                    {% else %}
+
+                                        <span
+                                            class="candidate-image-placeholder"
+                                            aria-hidden="true"
+                                        >
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                role="img"
+                                                focusable="false"
+                                            >
+
+                                                <circle
+                                                    cx="12"
+                                                    cy="8"
+                                                    r="3"
+                                                ></circle>
+
+                                                <path
+                                                    d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"
+                                                ></path>
+
+                                            </svg>
+
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    <span class="candidate-name">
+                                        {{ candidate.name }}
+                                    </span>
+
+
+                                    <span class="candidate-type">
+                                        {{ candidate.get_candidate_type_display }}
+                                    </span>
+
+
+                                    {% if candidate.description %}
+
+                                        <span class="candidate-description">
+                                            {{ candidate.description }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </label>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="no-candidates">
+                            No Institutional SRC candidates are available.
+                        </div>
+
+                    {% endif %}
+
+                </section>
+
+
+                <!-- ============================== -->
+                <!-- CAMPUS SRC -->
+                <!-- ============================== -->
+
+                <section
+                    class="candidate-section"
+                    aria-labelledby="campus-title"
+                >
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <p class="section-kicker">
+                                Campus division
+                            </p>
+
+                            <h2 id="campus-title">
+                                Campus SRC
+                            </h2>
+
+                        </div>
+
+                        <span class="section-number">
+                            02
+                        </span>
+
+                    </div>
+
+
+                    <p class="section-instruction">
+                        Select one organization or candidate for Campus SRC.
+                    </p>
+
+
+                    {% if campus_candidates %}
+
+                        <div class="candidate-list">
+
+                            {% for candidate in campus_candidates %}
+
+                                <label
+                                    class="candidate-card"
+                                    for="campus-candidate-{{ candidate.id }}"
+                                >
+
+                                    <input
+                                        type="radio"
+                                        id="campus-candidate-{{ candidate.id }}"
+                                        name="campus_candidate"
+                                        value="{{ candidate.id }}"
+                                        class="radio-input"
+                                        required
+                                    >
+
+
+                                    <span
+                                        class="selection-indicator"
+                                        aria-hidden="true"
+                                    >
+                                        ✓
+                                    </span>
+
+
+                                    {% if candidate.image %}
+
+                                        <img
+                                            src="{{ candidate.image.url }}"
+                                            alt="{{ candidate.name }}"
+                                            class="candidate-image"
+                                        >
+
+                                    {% else %}
+
+                                        <span
+                                            class="candidate-image-placeholder"
+                                            aria-hidden="true"
+                                        >
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                role="img"
+                                                focusable="false"
+                                            >
+
+                                                <circle
+                                                    cx="12"
+                                                    cy="8"
+                                                    r="3"
+                                                ></circle>
+
+                                                <path
+                                                    d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"
+                                                ></path>
+
+                                            </svg>
+
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    <span class="candidate-name">
+                                        {{ candidate.name }}
+                                    </span>
+
+
+                                    <span class="candidate-type">
+                                        {{ candidate.get_candidate_type_display }}
+                                    </span>
+
+
+                                    {% if candidate.description %}
+
+                                        <span class="candidate-description">
+                                            {{ candidate.description }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </label>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="no-candidates">
+                            No Campus SRC candidates are available.
+                        </div>
+
+                    {% endif %}
+
+                </section>
+
+
+                <!-- ============================== -->
+                <!-- SUBMIT -->
+                <!-- ============================== -->
+
+                <section
+                    class="submit-section"
+                    aria-label="Submit vote"
+                >
+
+                    <div
+                        class="selected-vote-info"
+                        id="selected-info"
+                        hidden
+                    >
+
+                        <strong>
+                            Both selections have been made.
+                        </strong>
+
+                        <span>
+                            Please verify your choices before submitting your vote.
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="submit-button"
+                        id="submit-btn"
+                    >
+                        Submit Your Vote
+                    </button>
+
+                </section>
+
+            </form>
+
+        {% else %}
+
+            <section class="no-candidates empty-voting-state">
+
+                <span
+                    class="empty-icon"
+                    aria-hidden="true"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        role="img"
+                        focusable="false"
+                    >
+
+                        <path
+                            d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"
+                        ></path>
+
+                    </svg>
+
+                </span>
+
+
+                <h2>
+                    No candidates available
+                </h2>
+
+
+                <p>
+                    There are currently no candidates registered for this election.
+                </p>
+
+
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="return-button"
+                >
+                    Back to Dashboard
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- ============================== -->
+    <!-- VOTING JAVASCRIPT -->
+    <!-- ============================== -->
+
+    <script>
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+
+                const candidateCards =
+                    document.querySelectorAll(
+                        '.candidate-card'
+                    );
+
+                const selectedInfo =
+                    document.getElementById(
+                        'selected-info'
+                    );
+
+                const form =
+                    document.getElementById(
+                        'vote-form'
+                    );
+
+
+                candidateCards.forEach(
+                    function(card) {
+
+                        const radio =
+                            card.querySelector(
+                                'input[type="radio"]'
+                            );
+
+
+                        radio.addEventListener(
+                            'change',
+                            function() {
+
+                                document
+                                    .querySelectorAll(
+                                        'input[name="' +
+                                        radio.name +
+                                        '"]'
+                                    )
+                                    .forEach(
+                                        function(input) {
+
+                                            input
+                                                .closest(
+                                                    '.candidate-card'
+                                                )
+                                                .classList
+                                                .remove(
+                                                    'selected'
+                                                );
+
+                                        }
+                                    );
+
+
+                                card.classList.add(
+                                    'selected'
+                                );
+
+
+                                const institutionalSelected =
+                                    document.querySelector(
+                                        'input[name="institutional_candidate"]:checked'
+                                    );
+
+                                const campusSelected =
+                                    document.querySelector(
+                                        'input[name="campus_candidate"]:checked'
+                                    );
+
+
+                                if (selectedInfo) {
+
+                                    selectedInfo.hidden =
+                                        !(
+                                            institutionalSelected &&
+                                            campusSelected
+                                        );
+
+                                }
+
+                            }
+                        );
+
+                    }
+                );
+
+
+                if (form) {
+
+                    form.addEventListener(
+                        'submit',
+                        function(event) {
+
+                            const institutionalSelected =
+                                document.querySelector(
+                                    'input[name="institutional_candidate"]:checked'
+                                );
+
+                            const campusSelected =
+                                document.querySelector(
+                                    'input[name="campus_candidate"]:checked'
+                                );
+
+
+                            if (!institutionalSelected) {
+
+                                event.preventDefault();
+
+                                alert(
+                                    'Please select ONE Institutional SRC organization/candidate.'
+                                );
+
+                                return;
+
+                            }
+
+
+                            if (!campusSelected) {
+
+                                event.preventDefault();
+
+                                alert(
+                                    'Please select ONE Campus SRC organization/candidate.'
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+    <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
 </body>
 
 </html>

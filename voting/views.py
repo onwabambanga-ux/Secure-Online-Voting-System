@@ -867,6 +867,10 @@ def create_election(request):
 
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
+
+        # Get the uploaded election logo.
+        election_logo = request.FILES.get('logo')
+
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         status = 'DRAFT'
@@ -1021,6 +1025,7 @@ def create_election(request):
             election = Election.objects.create(
                 title=title,
                 description=description,
+                logo=election_logo,
                 start_date=start_date,
                 end_date=end_date,
                 status=status,
@@ -1057,7 +1062,6 @@ def create_election(request):
         request,
         'voting/create_election.html'
     )
-
 
 @login_required(login_url='login')
 def edit_election(request, election_id):
@@ -1148,20 +1152,15 @@ def delete_election(request, election_id):
 
     if request.method == 'POST':
 
-        # Protect elections that already contain voting history
-        has_votes = Vote.objects.filter(
-            election=election
-        ).exists()
+        # Always update the election status before checking deletion.
+        election.update_status()
 
-        has_receipts = VoterReceipt.objects.filter(
-            election=election
-        ).exists()
-
-        if has_votes or has_receipts:
+        # Running elections must not be deleted.
+        if election.status in ['SCHEDULED', 'OPEN']:
             messages.error(
                 request,
-                'This election cannot be deleted because it contains '
-                'voting records or voter receipts.'
+                f'Election "{election.title}" cannot be deleted '
+                'because it is scheduled or currently running.'
             )
             return redirect('manage_elections')
 
@@ -1188,7 +1187,6 @@ def delete_election(request, election_id):
         {'election': election}
     )
 
-
 @login_required(login_url='login')
 @login_required(login_url='login')
 def import_students(request):
@@ -1197,6 +1195,35 @@ def import_students(request):
 
     if not request.user.is_staff:
         return redirect('dashboard')
+    
+    # Do not allow importing students while an election
+    # is scheduled or currently open.
+    elections = Election.objects.all()
+
+    for election in elections:
+        election.update_status()
+
+    active_elections = Election.objects.filter(
+        status__in=['SCHEDULED', 'OPEN']
+    )
+
+    if active_elections.exists():
+        election_names = ', '.join(
+            election.title for election in active_elections
+        )
+
+        return render(
+            request,
+            'voting/import_students.html',
+            {
+                'form': StudentImportForm(),
+                'error': (
+                    'Students cannot be imported because the '
+                    'following election(s) are scheduled or currently '
+                    f'open: {election_names}.'
+                ),
+            }
+        )
 
     if request.method == 'POST':
         form = StudentImportForm(request.POST, request.FILES)
@@ -2396,13 +2423,12 @@ def clear_voters(request):
         election.update_status()
 
     # Do not allow clearing voters while an election
-    # is scheduled or currently open
+    # is scheduled or currently open.
     active_elections = Election.objects.filter(
         status__in=['SCHEDULED', 'OPEN']
     )
 
     if active_elections.exists():
-
         election_names = ', '.join(
             election.title for election in active_elections
         )
@@ -2422,14 +2448,21 @@ def clear_voters(request):
             }
         )
 
-    # Delete StudentProfile records only.
-    #
-    # User accounts are NOT deleted.
-    # Votes are NOT deleted.
-    # Voter receipts are NOT deleted.
-    # Audit logs are NOT deleted.
+    # Get all voter profiles that have a linked User account.
+    voter_profiles = StudentProfile.objects.select_related(
+        'user'
+    ).all()
+
+    # Delete voter User accounts first.
+    # Only Users linked to StudentProfile records are affected.
+    for profile in voter_profiles:
+        if profile.user is not None:
+            profile.user.delete()
+
+    # Now remove all student profiles.
     StudentProfile.objects.all().delete()
 
+    # Votes, voter receipts, and audit logs are intentionally preserved.
     return render(
         request,
         'voting/manage_voters.html',
@@ -2437,6 +2470,9 @@ def clear_voters(request):
             'voters': StudentProfile.objects.all().order_by(
                 'student_number'
             ),
-            'success': 'The voter list has been cleared successfully.',
+            'success': (
+                'The voter list has been cleared successfully. '
+                'All voter accounts and student profiles have been removed.'
+            ),
         }
     )

@@ -2,138 +2,368 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
-  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Create Election | Secure Online Voting System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Create Election | Secure Online Voting System</title>
 </head>
 
 <body class="create-election-page auth-sidebar-page">
-  {% include 'partials/auth_sidebar.html' %}
-  <header class="navbar create-election-navbar">
-    <a class="brand" href="{% url 'admin_dashboard' %}">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" role="img" focusable="false">
-          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
-          <path d="M16 14h16M16 21h16M16 28h8"></path>
-          <path d="m28 30 3 3 6-7"></path>
-        </svg>
-      </span>
-      <span>Secure Online Voting</span>
-    </a>
 
-    <nav class="navbar-right" aria-label="Election navigation">
-      <a href="{% url 'manage_elections' %}" class="back-link">Back to Elections</a>
-      <a href="{% url 'admin_dashboard' %}" class="back-link">Admin Dashboard</a>
-    </nav>
-  </header>
+    {% include 'partials/auth_sidebar.html' %}
 
-  <main class="container create-election-container">
-    <section class="form-card" aria-labelledby="create-election-title">
-      <div class="form-intro">
-        <p class="eyebrow">Election management</p>
-        <h1 id="create-election-title">Create Election</h1>
-        <p class="subtitle">Create a new election and add its candidates.</p>
-      </div>
+    <header class="navbar create-election-navbar">
 
-      <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+        <a class="brand" href="{% url 'admin_dashboard' %}">
 
-        <h2 class="section-title">Election Details</h2>
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 48 48" role="img" focusable="false">
+                    <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+                    <path d="M16 14h16M16 21h16M16 28h8"></path>
+                    <path d="m28 30 3 3 6-7"></path>
+                </svg>
+            </span>
 
-        <div class="form-group">
-          <label for="title">Election Title</label>
-          <input type="text" id="title" name="title" placeholder="Enter election title" required>
-        </div>
+            <span>Secure Online Voting</span>
 
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description" name="description" placeholder="Enter election description" required></textarea>
-        </div>
+        </a>
 
-        <div class="form-group">
-          <label for="election_type">Election Type</label>
-          <select id="election_type" name="election_type" required>
-            <option value="NORMAL">Normal Election</option>
-            <option value="RUNOFF">Runoff</option>
-          </select>
-        </div>
+        <nav class="navbar-right" aria-label="Election navigation">
 
-        <div class="form-group">
-          <label for="campus">Campus (optional)</label>
-          <input type="text" id="campus" name="campus" placeholder="Enter campus name">
-        </div>
+            <a href="{% url 'manage_elections' %}" class="back-link">
+                Back to Elections
+            </a>
 
-        <div class="form-group">
-          <label for="start_date">Start Date and Time</label>
-          <input type="datetime-local" id="start_date" name="start_date" required>
-        </div>
+            <a href="{% url 'admin_dashboard' %}" class="back-link">
+                Admin Dashboard
+            </a>
 
-        <div class="form-group">
-          <label for="end_date">End Date and Time</label>
-          <input type="datetime-local" id="end_date" name="end_date" required>
-        </div>
+        </nav>
 
-        <div class="form-group">
-          <label for="status">Election Status</label>
-          <select id="status" name="status" required>
-            <option value="DRAFT">Draft</option>
-            <option value="SCHEDULED">Scheduled</option>
-            <option value="OPEN">Open</option>
-            <option value="CLOSED">Closed</option>
-            <option value="RESULTS">Results</option>
-          </select>
-        </div>
+    </header>
 
-        <h2 class="section-title">Candidates</h2>
+    <main class="container create-election-container">
 
-        <p class="subtitle candidate-subtitle">
-          Add the organizations or independent candidates participating in this election.
-        </p>
+        <section class="form-card" aria-labelledby="create-election-title">
 
-        <div id="candidates-container"></div>
+            <div class="form-intro">
 
-        <input type="hidden" id="candidate_count" name="candidate_count" value="0">
+                <p class="eyebrow">
+                    Election management
+                </p>
 
-        <button type="button" class="add-candidate-button" onclick="addCandidate()">
-          <span aria-hidden="true">+</span>
-          Add Candidate
-        </button>
+                <h1 id="create-election-title">
+                    Create Election
+                </h1>
 
-        <div class="buttons">
-          <button type="submit" class="button submit-button">Create Election</button>
-          <a href="{% url 'manage_elections' %}" class="button cancel-button">Cancel</a>
-        </div>
-      </form>
-    </section>
-  </main>
+                <p class="subtitle">
+                    Create a new election and add its candidates.
+                </p>
 
-  <script>
-    let candidateCount = 0;
+            </div>
 
-    function addCandidate() {
-      const container = document.getElementById('candidates-container');
-      const candidateNumber = candidateCount;
-      const candidateCard = document.createElement('div');
+            <form method="POST" enctype="multipart/form-data">
 
-      candidateCard.className = 'candidate-card';
-      candidateCard.id = `candidate-${candidateNumber}`;
-      candidateCard.innerHTML = `
-                <div class="candidate-header">
-                    <div class="candidate-heading">
-                        <span class="candidate-index" aria-hidden="true">${candidateNumber + 1}</span>
-                        <h3>Candidate ${candidateNumber + 1}</h3>
-                    </div>
-                    <button type="button" class="remove-button" onclick="removeCandidate(${candidateNumber})">
-                        Remove
-                    </button>
+                {% csrf_token %}
+
+                <!-- ========================= -->
+                <!-- ELECTION DETAILS -->
+                <!-- ========================= -->
+
+                <h2 class="section-title">
+                    Election Details
+                </h2>
+
+                <div class="form-group">
+
+                    <label for="title">
+                        Election Title
+                    </label>
+
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        placeholder="Enter election title"
+                        required
+                    >
+
                 </div>
 
                 <div class="form-group">
-                    <label for="candidate-src-category-${candidateNumber}">SRC Category</label>
+
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Enter election description"
+                        required
+                    ></textarea>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- ELECTION LOGO -->
+                <!-- ========================= -->
+
+                <div class="form-group">
+
+                    <label for="logo">
+                        Election Logo
+                    </label>
+
+                    <input
+                        type="file"
+                        id="logo"
+                        name="logo"
+                        accept="image/*"
+                    >
+
+                    <p class="image-help">
+                        Upload the logo for this election, for example the UFH logo.
+                    </p>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="election_type">
+                        Election Type
+                    </label>
+
+                    <select
+                        id="election_type"
+                        name="election_type"
+                        required
+                    >
+
+                        <option value="NORMAL">
+                            Normal Election
+                        </option>
+
+                        <option value="RUNOFF">
+                            Runoff
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="campus">
+                        Campus (optional)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="campus"
+                        name="campus"
+                        placeholder="Enter campus name"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="start_date">
+                        Start Date and Time
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="start_date"
+                        name="start_date"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="end_date">
+                        End Date and Time
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="end_date"
+                        name="end_date"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="status">
+                        Election Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                        required
+                    >
+
+                        <option value="DRAFT">
+                            Draft
+                        </option>
+
+                        <option value="SCHEDULED">
+                            Scheduled
+                        </option>
+
+                        <option value="OPEN">
+                            Open
+                        </option>
+
+                        <option value="CLOSED">
+                            Closed
+                        </option>
+
+                        <option value="RESULTS">
+                            Results
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- ========================= -->
+                <!-- CANDIDATES -->
+                <!-- ========================= -->
+
+                <h2 class="section-title">
+                    Candidates
+                </h2>
+
+                <p class="subtitle candidate-subtitle">
+                    Add the organizations or independent candidates participating in this election.
+                </p>
+
+                <div id="candidates-container"></div>
+
+                <input
+                    type="hidden"
+                    id="candidate_count"
+                    name="candidate_count"
+                    value="0"
+                >
+
+                <button
+                    type="button"
+                    class="add-candidate-button"
+                    onclick="addCandidate()"
+                >
+
+                    <span aria-hidden="true">+</span>
+
+                    Add Candidate
+
+                </button>
+
+                <!-- ========================= -->
+                <!-- FORM BUTTONS -->
+                <!-- ========================= -->
+
+                <div class="buttons">
+
+                    <button
+                        type="submit"
+                        class="button submit-button"
+                    >
+                        Create Election
+                    </button>
+
+                    <a
+                        href="{% url 'manage_elections' %}"
+                        class="button cancel-button"
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        let candidateCount = 0;
+
+
+        function addCandidate() {
+
+            const container =
+                document.getElementById('candidates-container');
+
+            const candidateNumber =
+                candidateCount;
+
+            const candidateCard =
+                document.createElement('div');
+
+
+            candidateCard.className =
+                'candidate-card';
+
+            candidateCard.id =
+                `candidate-${candidateNumber}`;
+
+
+            candidateCard.innerHTML = `
+
+                <div class="candidate-header">
+
+                    <div class="candidate-heading">
+
+                        <span
+                            class="candidate-index"
+                            aria-hidden="true"
+                        >
+                            ${candidateNumber + 1}
+                        </span>
+
+                        <h3>
+                            Candidate ${candidateNumber + 1}
+                        </h3>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="remove-button"
+                        onclick="removeCandidate(${candidateNumber})"
+                    >
+                        Remove
+                    </button>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label
+                        for="candidate-src-category-${candidateNumber}"
+                    >
+                        SRC Category
+                    </label>
+
                     <select
                         name="candidate_src_category_${candidateNumber}"
                         id="candidate-src-category-${candidateNumber}"
@@ -141,30 +371,92 @@
                         onchange="toggleCandidateCampus(${candidateNumber}, this.value)"
                     >
 
-                        <option value="INSTITUTIONAL">Institutional SRC</option>
-                        <option value="CAMPUS">Campus SRC</option>
-                 </select>
+                        <option value="INSTITUTIONAL">
+                            Institutional SRC
+                        </option>
+
+                        <option value="CAMPUS">
+                            Campus SRC
+                        </option>
+
+                    </select>
+
                 </div>
 
-                <div class="form-group campus-group" id="candidate-campus-group-${candidateNumber}" hidden>
-                    <label for="candidate-campus-${candidateNumber}">Campus</label>
-                    <select name="candidate_campus_${candidateNumber}" id="candidate-campus-${candidateNumber}">
-                        <option value="" disabled selected>Select Campus</option>
-                        <option value="Alice Campus">Alice Campus</option>
-                        <option value="East London Campus">East London Campus</option>
+
+                <div
+                    class="form-group campus-group"
+                    id="candidate-campus-group-${candidateNumber}"
+                    hidden
+                >
+
+                    <label
+                        for="candidate-campus-${candidateNumber}"
+                    >
+                        Campus
+                    </label>
+
+                    <select
+                        name="candidate_campus_${candidateNumber}"
+                        id="candidate-campus-${candidateNumber}"
+                    >
+
+                        <option
+                            value=""
+                            disabled
+                            selected
+                        >
+                            Select Campus
+                        </option>
+
+                        <option value="Alice Campus">
+                            Alice Campus
+                        </option>
+
+                        <option value="East London Campus">
+                            East London Campus
+                        </option>
+
                     </select>
+
                 </div>
+
 
                 <div class="form-group">
-                    <label for="candidate-type-${candidateNumber}">Candidate Type</label>
-                    <select name="candidate_type_${candidateNumber}" id="candidate-type-${candidateNumber}" required>
-                        <option value="ORGANIZATION">Organization</option>
-                        <option value="INDEPENDENT">Independent Candidate</option>
+
+                    <label
+                        for="candidate-type-${candidateNumber}"
+                    >
+                        Candidate Type
+                    </label>
+
+                    <select
+                        name="candidate_type_${candidateNumber}"
+                        id="candidate-type-${candidateNumber}"
+                        required
+                    >
+
+                        <option value="ORGANIZATION">
+                            Organization
+                        </option>
+
+                        <option value="INDEPENDENT">
+                            Independent Candidate
+                        </option>
+
                     </select>
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="candidate-name-${candidateNumber}">Candidate / Organization Name</label>
+
+                    <label
+                        for="candidate-name-${candidateNumber}"
+                    >
+                        Candidate / Organization Name
+                    </label>
+
                     <input
                         type="text"
                         name="candidate_name_${candidateNumber}"
@@ -172,97 +464,130 @@
                         placeholder="Enter candidate or organization name"
                         required
                     >
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="candidate-description-${candidateNumber}">Description</label>
+
+                    <label
+                        for="candidate-description-${candidateNumber}"
+                    >
+                        Description
+                    </label>
+
                     <textarea
                         name="candidate_description_${candidateNumber}"
                         id="candidate-description-${candidateNumber}"
                         placeholder="Enter a short description"
                     ></textarea>
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="candidate-image-${candidateNumber}">Logo / Candidate Photo</label>
+
+                    <label
+                        for="candidate-image-${candidateNumber}"
+                    >
+                        Logo / Candidate Photo
+                    </label>
+
                     <input
                         type="file"
                         name="candidate_image_${candidateNumber}"
                         id="candidate-image-${candidateNumber}"
                         accept="image/*"
                     >
-                    <p class="image-help">Upload an organization logo or candidate photo.</p>
+
+                    <p class="image-help">
+                        Upload an organization logo or candidate photo.
+                    </p>
+
                 </div>
+
             `;
 
 
-      container.appendChild(candidateCard);
-      candidateCount++;
-      updateCandidateCount();
+            container.appendChild(candidateCard);
 
-       
-    }
+            candidateCount++;
 
-    function toggleCandidateCampus(number, category) {
-      const campusGroup = document.getElementById(`candidate-campus-group-${number}`);
-      const campusInput = document.getElementById(`candidate-campus-${number}`);
-
-      if (category === 'CAMPUS') {
-        campusGroup.hidden = false;
-        campusInput.required = true;
-      } else {
-        campusGroup.hidden = true;
-        campusInput.required = false;
-        campusInput.value = '';
-      }
-    }
-
-    function toggleCandidateCampus(number, category) {
-
-        const campusGroup = document.getElementById(
-            `candidate-campus-group-${number}`
-        );
-
-        const campusInput = document.getElementById(
-            `candidate-campus-${number}`
-        );
-
-        if (category === 'CAMPUS') {
-
-            campusGroup.style.display = 'block';
-            campusInput.required = true;
-
-        } else {
-
-            campusGroup.style.display = 'none';
-            campusInput.required = false;
-            campusInput.value = '';
+            updateCandidateCount();
 
         }
-    }
 
 
-    function removeCandidate(number) {
-      const candidate = document.getElementById(`candidate-${number}`);
+        function toggleCandidateCampus(number, category) {
 
-      if (candidate) {
-        candidate.remove();
-      }
+            const campusGroup =
+                document.getElementById(
+                    `candidate-campus-group-${number}`
+                );
 
-      updateCandidateCount();
-    }
-
-    function updateCandidateCount() {
-      const candidates = document.querySelectorAll('#candidates-container .candidate-card');
-      document.getElementById('candidate_count').value = candidates.length;
-    }
-
-    addCandidate();
+            const campusInput =
+                document.getElementById(
+                    `candidate-campus-${number}`
+                );
 
 
-  </script>
-<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+            if (category === 'CAMPUS') {
 
+                campusGroup.hidden = false;
+
+                campusInput.required = true;
+
+            } else {
+
+                campusGroup.hidden = true;
+
+                campusInput.required = false;
+
+                campusInput.value = '';
+
+            }
+
+        }
+
+
+        function removeCandidate(number) {
+
+            const candidate =
+                document.getElementById(
+                    `candidate-${number}`
+                );
+
+
+            if (candidate) {
+
+                candidate.remove();
+
+            }
+
+            updateCandidateCount();
+
+        }
+
+
+        function updateCandidateCount() {
+
+            const candidates =
+                document.querySelectorAll(
+                    '#candidates-container .candidate-card'
+                );
+
+            document.getElementById(
+                'candidate_count'
+            ).value = candidates.length;
+
+        }
+
+
+        addCandidate();
+
+    </script>
+
+    <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 
 </body>
 

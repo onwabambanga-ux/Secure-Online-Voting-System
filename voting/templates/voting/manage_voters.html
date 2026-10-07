@@ -1,460 +1,743 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Manage Voters</title>
+  {% load static %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #222;
-        }
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: 30px auto;
-        }
+  <style>
+    /*
+     * Manage Voters page
+     * Uses the application's theme variables so the
+     * page follows both dark and light mode.
+     */
 
-        .header {
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
+    body.manage-voters-page {
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        .header h1 {
-            margin: 0 0 8px;
-            font-size: 28px;
-        }
+    .manage-voters-container {
+      width: min(95%, 1400px);
+      margin: 30px auto 50px;
+    }
 
-        .header p {
-            margin: 0;
-            color: #666;
-        }
+    /* Page heading */
 
-        .top-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+    .manage-voters-header {
+      background: var(--color-surface, #ffffff);
+      color: var(--color-text, #222222);
+      padding: 28px;
+      border-radius: 14px;
+      border: 1px solid var(--color-border, #e5e7eb);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+    }
 
-        .back-button {
-            display: inline-block;
-            padding: 10px 18px;
-            background: #343a40;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-        }
+    .manage-voters-header h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 700;
+    }
 
-        .back-button:hover {
-            background: #23272b;
-        }
+    .manage-voters-header p {
+      margin: 0;
+      color: var(--color-muted, #6b7280);
+    }
 
-        .clear-button {
-            border: none;
-            padding: 10px 18px;
-            background: #dc3545;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+    /* Notifications */
 
-        .clear-button:hover {
-            background: #b02a37;
-        }
+    .voter-message {
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
 
-        .message {
-            padding: 14px 18px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
+    .voter-error-message {
+      background: var(--color-danger-soft, #f8d7da);
+      color: var(--color-danger-text, #842029);
+      border: 1px solid var(--color-danger-border, #f5c2c7);
+    }
 
-        .error-message {
-            background: #f8d7da;
-            color: #842029;
-            border: 1px solid #f5c2c7;
-        }
+    .voter-success-message {
+      background: var(--color-success-soft, #d1e7dd);
+      color: var(--color-success-text, #0f5132);
+      border: 1px solid var(--color-success-border, #badbcc);
+    }
 
-        .success-message {
-            background: #d1e7dd;
-            color: #0f5132;
-            border: 1px solid #badbcc;
-        }
+    /* Top actions */
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+    .voter-top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
+    .voter-back-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 18px;
+      background: var(--color-secondary, #343a40);
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: 0.2s ease;
+    }
 
-        .stat-card h3 {
-            margin: 0 0 8px;
-            color: #666;
-            font-size: 14px;
-        }
+    .voter-back-button:hover {
+      opacity: 0.9;
+    }
 
-        .stat-card strong {
-            font-size: 26px;
-        }
+    .voter-clear-button {
+      border: none;
+      padding: 11px 18px;
+      background: var(--color-danger, #dc3545);
+      color: #ffffff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
 
-        .table-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            overflow-x: auto;
-        }
+    .voter-clear-button:hover {
+      opacity: 0.9;
+    }
 
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+    .voter-clear-warning {
+      margin-top: 10px;
+      color: var(--color-danger-text, #842029);
+      font-size: 13px;
+    }
 
-        .table-header h2 {
-            margin: 0;
-            font-size: 20px;
-        }
+    /* Statistics */
 
-        .search-box {
-            width: 320px;
-            max-width: 100%;
-            padding: 11px 14px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+    .voter-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
+    .voter-stat-card {
+      background: var(--color-surface, #ffffff);
+      color: var(--color-text, #222222);
+      padding: 22px;
+      border-radius: 12px;
+      border: 1px solid var(--color-border, #e5e7eb);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
 
-        th {
-            background: #343a40;
-            color: white;
-            padding: 13px 10px;
-            text-align: left;
-            font-size: 13px;
-        }
+    .voter-stat-card h3 {
+      margin: 0 0 8px;
+      color: var(--color-muted, #6b7280);
+      font-size: 14px;
+      font-weight: 600;
+    }
 
-        td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e5e5e5;
-            font-size: 14px;
-        }
+    .voter-stat-card strong {
+      font-size: 28px;
+    }
 
-        tr:hover {
-            background: #f8f9fa;
-        }
+    /* Table */
 
-        .status {
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+    .voter-table-card {
+      background: var(--color-surface, #ffffff);
+      color: var(--color-text, #222222);
+      border-radius: 14px;
+      padding: 22px;
+      border: 1px solid var(--color-border, #e5e7eb);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      overflow-x: auto;
+    }
 
-        .status-yes {
-            background: #d1e7dd;
-            color: #0f5132;
-        }
+    .voter-table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
 
-        .status-no {
-            background: #f8d7da;
-            color: #842029;
-        }
+    .voter-table-header h2 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 700;
+    }
 
-        .status-active {
-            background: #d1e7dd;
-            color: #0f5132;
-        }
+    .voter-search-box {
+      width: 320px;
+      max-width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--color-border, #cccccc);
+      border-radius: 8px;
+      background: var(--color-input-bg, #ffffff);
+      color: var(--color-text, #222222);
+      font-size: 14px;
+      outline: none;
+    }
 
-        .status-suspended {
-            background: #fff3cd;
-            color: #664d03;
-        }
+    .voter-search-box:focus {
+      border-color: var(--color-primary, #60a5fa);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+    }
 
-        .status-inactive {
-            background: #e2e3e5;
-            color: #41464b;
-        }
+    .voter-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
 
-        .empty-message {
-            text-align: center;
-            padding: 30px;
-            color: #777;
-        }
+    .voter-table th {
+      background: var(--color-table-header, #343a40);
+      color: #ffffff;
+      padding: 13px 10px;
+      text-align: left;
+      font-size: 13px;
+    }
 
-        .clear-warning {
-            margin-top: 12px;
-            color: #842029;
-            font-size: 13px;
-        }
+    .voter-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--color-border, #e5e5e5);
+      font-size: 14px;
+    }
 
-        @media (max-width: 800px) {
-            .stats {
-                grid-template-columns: 1fr;
-            }
+    .voter-table tbody tr {
+      transition: background 0.15s ease;
+    }
 
-            .top-actions {
-                align-items: stretch;
-            }
+    .voter-table tbody tr:hover {
+      background: var(--color-hover, #f8f9fa);
+    }
 
-            .back-button,
-            .clear-button {
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
+    /* Status badges */
+
+    .voter-status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .voter-status-yes {
+      background: var(--color-success-soft, #d1e7dd);
+      color: var(--color-success-text, #0f5132);
+    }
+
+    .voter-status-no {
+      background: var(--color-danger-soft, #f8d7da);
+      color: var(--color-danger-text, #842029);
+    }
+
+    .voter-status-active {
+      background: var(--color-success-soft, #d1e7dd);
+      color: var(--color-success-text, #0f5132);
+    }
+
+    .voter-status-suspended {
+      background: var(--color-warning-soft, #fff3cd);
+      color: var(--color-warning-text, #664d03);
+    }
+
+    .voter-status-inactive {
+      background: var(--color-neutral-soft, #e2e3e5);
+      color: var(--color-neutral-text, #41464b);
+    }
+
+    .voter-empty-message {
+      text-align: center;
+      padding: 30px;
+      color: var(--color-muted, #777777);
+    }
+
+    /* Responsive */
+
+    @media (max-width: 800px) {
+
+      .voter-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .voter-top-actions {
+        align-items: stretch;
+      }
+
+      .voter-back-button,
+      .voter-clear-button {
+        width: 100%;
+        text-align: center;
+      }
+
+      .voter-table-card {
+        padding: 15px;
+      }
+    }
+  </style>
+
+  <title>Manage Voters | Secure Online Voting System</title>
 </head>
 
-<body>
 
-<div class="container">
+<body class="manage-voters-page auth-sidebar-page">
 
-    <div class="header">
-        <h1>Manage Voters</h1>
-        <p>
-            View and manage students registered in the voting system.
-        </p>
-    </div>
+  {% include 'partials/auth_sidebar.html' %}
+
+
+  <!-- Navigation -->
+
+  <header class="navbar manage-voters-navbar">
+
+    <a class="brand" href="{% url 'admin_dashboard' %}">
+
+      <span class="brand-mark" aria-hidden="true">
+
+        <svg viewBox="0 0 48 48" role="img" focusable="false">
+
+          <rect
+            x="10"
+            y="6"
+            width="28"
+            height="36"
+            rx="4"
+          ></rect>
+
+          <path d="M16 14h16M16 21h16M16 28h8"></path>
+
+          <path d="m28 30 3 3 6-7"></path>
+
+        </svg>
+
+      </span>
+
+      <span>
+        Secure Online Voting
+      </span>
+
+    </a>
+
+
+    <nav
+      class="navbar-right"
+      aria-label="Voter management navigation"
+    >
+
+      <a
+        href="{% url 'admin_dashboard' %}"
+        class="back-link"
+      >
+        Admin Dashboard
+      </a>
+
+      <a
+        href="{% url 'logout' %}"
+        class="logout"
+      >
+        Logout
+      </a>
+
+    </nav>
+
+  </header>
+
+
+  <!-- Main content -->
+
+  <main class="manage-voters-container">
+
+
+    <!-- Page heading -->
+
+    <section class="manage-voters-header">
+
+      <p class="eyebrow">
+        Student administration
+      </p>
+
+      <h1>
+        Manage Voters
+      </h1>
+
+      <p>
+        View and manage students registered in the voting system.
+      </p>
+
+    </section>
+
+
+    <!-- Error notification -->
 
     {% if error %}
-        <div class="message error-message">
-            {{ error }}
-        </div>
+
+    <div
+      class="voter-message voter-error-message"
+      role="alert"
+      aria-live="assertive"
+    >
+      {{ error }}
+    </div>
+
     {% endif %}
+
+
+    <!-- Success notification -->
 
     {% if success %}
-        <div class="message success-message">
-            {{ success }}
-        </div>
+
+    <div
+      class="voter-message voter-success-message"
+      role="status"
+      aria-live="polite"
+    >
+      {{ success }}
+    </div>
+
     {% endif %}
 
-    <div class="top-actions">
 
-        <a href="{% url 'admin_dashboard' %}" class="back-button">
-            Back to Admin Dashboard
-        </a>
+    <!-- Actions -->
 
-        <div>
-            <form method="POST"
-                  action="{% url 'clear_voters' %}"
-                  onsubmit="return confirm(
-                      'Are you sure you want to clear the voter list? ' +
-                      'This will remove the StudentProfile voter records ' +
-                      'but will preserve voting history.'
-                  );">
+    <div class="voter-top-actions">
 
-                {% csrf_token %}
+      <a
+        href="{% url 'admin_dashboard' %}"
+        class="voter-back-button"
+      >
+        Back to Admin Dashboard
+      </a>
 
-                <button type="submit" class="clear-button">
-                    Clear Voter List
-                </button>
-            </form>
 
-            <div class="clear-warning">
-                Clearing is blocked while an election is scheduled or open.
-            </div>
+      <div>
+
+        <form
+          method="POST"
+          action="{% url 'clear_voters' %}"
+          onsubmit="return confirm(
+            'Are you sure you want to clear the voter list? ' +
+            'This will remove all student profiles and voter accounts.'
+          );"
+        >
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="voter-clear-button"
+          >
+            Clear Voter List
+          </button>
+
+        </form>
+
+
+        <div class="voter-clear-warning">
+          Clearing is blocked while an election is scheduled or open.
         </div>
+
+      </div>
 
     </div>
 
-    <div class="stats">
 
-        <div class="stat-card">
-            <h3>Total Voters</h3>
-            <strong id="totalVoters">{{ voters|length }}</strong>
-        </div>
+    <!-- Statistics -->
 
-        <div class="stat-card">
-            <h3>Eligible Voters</h3>
-            <strong id="eligibleVoters">
-                {{  eligible_voters }}
-            </strong>
-        </div>
+    <section
+      class="voter-stats"
+      aria-label="Voter statistics"
+    >
 
-        <div class="stat-card">
-            <h3>Displayed Results</h3>
-            <strong id="displayedVoters">
-                {{ voters|length }}
-            </strong>
-        </div>
+      <article class="voter-stat-card">
 
-    </div>
+        <h3>
+          Total Voters
+        </h3>
 
-    <div class="table-card">
+        <strong id="totalVoters">
+          {{ voters|length }}
+        </strong>
 
-        <div class="table-header">
+      </article>
 
-            <h2>Student Voter List</h2>
 
-            <input
-                type="text"
-                id="searchInput"
-                class="search-box"
-                placeholder="Search student number, name, campus or faculty..."
+      <article class="voter-stat-card">
+
+        <h3>
+          Eligible Voters
+        </h3>
+
+        <strong id="eligibleVoters">
+          {{ eligible_voters }}
+        </strong>
+
+      </article>
+
+
+      <article class="voter-stat-card">
+
+        <h3>
+          Displayed Results
+        </h3>
+
+        <strong id="displayedVoters">
+          {{ voters|length }}
+        </strong>
+
+      </article>
+
+    </section>
+
+
+    <!-- Student table -->
+
+    <section class="voter-table-card">
+
+      <div class="voter-table-header">
+
+        <h2>
+          Student Voter List
+        </h2>
+
+
+        <input
+          type="text"
+          id="searchInput"
+          class="voter-search-box"
+          placeholder="Search student number, name, campus or faculty..."
+          aria-label="Search voters"
+        >
+
+      </div>
+
+
+      <table
+        id="votersTable"
+        class="voter-table"
+      >
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Student Number
+            </th>
+
+            <th>
+              Full Name
+            </th>
+
+            <th>
+              Campus
+            </th>
+
+            <th>
+              Faculty
+            </th>
+
+            <th>
+              Registered
+            </th>
+
+            <th>
+              Eligible
+            </th>
+
+            <th>
+              Account Status
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          {% for voter in voters %}
+
+          <tr class="voter-row">
+
+            <td>
+              {{ voter.student_number }}
+            </td>
+
+            <td>
+              {{ voter.full_name }}
+            </td>
+
+            <td>
+              {{ voter.campus }}
+            </td>
+
+            <td>
+              {{ voter.faculty }}
+            </td>
+
+
+            <td>
+
+              {% if voter.registered %}
+
+              <span class="voter-status voter-status-yes">
+                Yes
+              </span>
+
+              {% else %}
+
+              <span class="voter-status voter-status-no">
+                No
+              </span>
+
+              {% endif %}
+
+            </td>
+
+
+            <td>
+
+              {% if voter.eligible %}
+
+              <span class="voter-status voter-status-yes">
+                Yes
+              </span>
+
+              {% else %}
+
+              <span class="voter-status voter-status-no">
+                No
+              </span>
+
+              {% endif %}
+
+            </td>
+
+
+            <td>
+
+              {% if voter.account_status == 'ACTIVE' %}
+
+              <span class="voter-status voter-status-active">
+                Active
+              </span>
+
+              {% elif voter.account_status == 'SUSPENDED' %}
+
+              <span class="voter-status voter-status-suspended">
+                Suspended
+              </span>
+
+              {% else %}
+
+              <span class="voter-status voter-status-inactive">
+                Inactive
+              </span>
+
+              {% endif %}
+
+            </td>
+
+          </tr>
+
+          {% empty %}
+
+          <tr>
+
+            <td
+              colspan="7"
+              class="voter-empty-message"
             >
+              No voters found.
+            </td>
 
-        </div>
+          </tr>
 
-        <table id="votersTable">
+          {% endfor %}
 
-            <thead>
-                <tr>
-                    <th>Student Number</th>
-                    <th>Full Name</th>
-                    <th>Campus</th>
-                    <th>Faculty</th>
-                    <th>Registered</th>
-                    <th>Eligible</th>
-                    <th>Account Status</th>
-                </tr>
-            </thead>
+        </tbody>
 
-            <tbody>
+      </table>
 
-                {% for voter in voters %}
+    </section>
 
-                <tr class="voter-row">
+  </main>
 
-                    <td>{{ voter.student_number }}</td>
 
-                    <td>{{ voter.full_name }}</td>
+  <!-- Theme / Sidebar JavaScript -->
 
-                    <td>{{ voter.campus }}</td>
+  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 
-                    <td>{{ voter.faculty }}</td>
 
-                    <td>
-                        {% if voter.registered %}
-                            <span class="status status-yes">
-                                Yes
-                            </span>
-                        {% else %}
-                            <span class="status status-no">
-                                No
-                            </span>
-                        {% endif %}
-                    </td>
+  <!-- Search -->
 
-                    <td>
-                        {% if voter.eligible %}
-                            <span class="status status-yes">
-                                Yes
-                            </span>
-                        {% else %}
-                            <span class="status status-no">
-                                No
-                            </span>
-                        {% endif %}
-                    </td>
+  <script>
 
-                    <td>
+    const searchInput =
+      document.getElementById('searchInput');
 
-                        {% if voter.account_status == 'ACTIVE' %}
+    const voterRows =
+      document.querySelectorAll('.voter-row');
 
-                            <span class="status status-active">
-                                Active
-                            </span>
+    const displayedVoters =
+      document.getElementById('displayedVoters');
 
-                        {% elif voter.account_status == 'SUSPENDED' %}
 
-                            <span class="status status-suspended">
-                                Suspended
-                            </span>
+    if (searchInput) {
 
-                        {% else %}
+      searchInput.addEventListener('input', function () {
 
-                            <span class="status status-inactive">
-                                Inactive
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-                    <td colspan="7" class="empty-message">
-                        No voters found.
-                    </td>
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-<script>
-
-    const searchInput = document.getElementById('searchInput');
-    const voterRows = document.querySelectorAll('.voter-row');
-    const displayedVoters = document.getElementById('displayedVoters');
-
-    searchInput.addEventListener('input', function () {
-
-        const searchTerm = this.value.toLowerCase().trim();
+        const searchTerm =
+          this.value.toLowerCase().trim();
 
         let visibleCount = 0;
 
+
         voterRows.forEach(function (row) {
 
-            const rowText = row.textContent.toLowerCase();
+          const rowText =
+            row.textContent.toLowerCase();
 
-            if (rowText.includes(searchTerm)) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
+
+          if (rowText.includes(searchTerm)) {
+
+            row.style.display = '';
+
+            visibleCount++;
+
+          } else {
+
+            row.style.display = 'none';
+
+          }
 
         });
 
-        displayedVoters.textContent = visibleCount;
 
-    });
+        if (displayedVoters) {
 
-</script>
+          displayedVoters.textContent =
+            visibleCount;
+
+        }
+
+      });
+
+    }
+
+  </script>
 
 </body>
+
 </html>

@@ -4,69 +4,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   {% load static %}
+
   <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
   <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
     html,
     body {
-        min-height: 100%;
+      min-height: 100%;
     }
 
     body.register-page {
-        min-height: 100vh;
-        height: auto;
-        overflow-x: hidden;
-        overflow-y: auto;
-        align-items: center;
-        background-color: var(--color-bg);
-        background-attachment: fixed;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 30px 20px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background-color: var(--color-bg);
+      background-attachment: fixed;
     }
 
     body.register-page .auth-shell {
-        width: min(100%, 520px);
-        margin: 25px auto;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
     }
 
     body.register-page .register-card {
-        width: 100%;
-        min-height: auto;
-        margin: 0;
-        padding: 42px;
+      width: 100%;
+      max-width: 520px;
+      min-height: auto;
+      margin: 0 auto;
+      padding: 42px;
+      box-sizing: border-box;
     }
 
     @media (max-width: 600px) {
-        body.register-page {
-            padding: 15px;
-        }
+      body.register-page {
+        padding: 20px 15px;
+      }
 
-        body.register-page .register-card {
-            padding: 28px 20px;
-        }
+      body.register-page .register-card {
+        padding: 30px 22px;
+      }
     }
-</style>
-  <title>Register | Online Voting System</title>
+  </style>
+
+  <title>Register | Secure Online Voting System</title>
 </head>
 
+
 <body class="register-page">
+
   <main class="auth-shell">
+
     <section class="register-card" aria-labelledby="register-title">
+
+      <!-- Logo -->
       <div class="logo" aria-hidden="true">
-        <svg class="logo-icon" viewBox="0 0 48 48" role="img" focusable="false">
-          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
+
+        <svg
+          class="logo-icon"
+          viewBox="0 0 48 48"
+          role="img"
+          focusable="false"
+        >
+
+          <rect
+            x="10"
+            y="6"
+            width="28"
+            height="36"
+            rx="4"
+          ></rect>
+
           <path d="M16 14h16M16 21h16M16 28h8"></path>
+
           <path d="m28 30 3 3 6-7"></path>
+
         </svg>
+
       </div>
 
-      <h1 id="register-title">Create Account</h1>
+
+      <!-- Heading -->
+      <h1 id="register-title">
+        Create Account
+      </h1>
 
       <p class="subtitle">
         Register to participate in online elections
       </p>
 
+
+      <!-- Registration Form -->
       <form method="POST">
+
         {% csrf_token %}
 
         {{ form.as_p }}
@@ -74,14 +113,29 @@
         <button type="submit">
           Create Account
         </button>
+
       </form>
 
+
+      <!-- Login Link -->
       <p class="login-link">
+
         Already have an account?
-        <a href="{% url 'login' %}">Login</a>
+
+        <a href="{% url 'login' %}">
+          Login
+        </a>
+
       </p>
+
     </section>
+
   </main>
+
+
+  <!-- Theme JavaScript -->
+  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
 </body>
 
 </html>

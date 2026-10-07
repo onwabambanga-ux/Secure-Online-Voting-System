@@ -2,661 +2,897 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  {% load static %}
+    <meta charset="UTF-8">
 
-  <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
-  <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
 
-  <title>Election Results | Live SRC Voting System</title>
+    <link rel="stylesheet" href="{% static 'voting/css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'voting/css/style.css' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Election Results | Live SRC Voting System</title>
+
+    <style>
+
+        /* ==========================================
+           ELECTION LOGO
+           ========================================== */
+
+        .results-election-logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-election-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            border-radius: 16px;
+        }
+
+        @media (max-width: 600px) {
+
+            .results-election-logo {
+                width: 85px;
+                height: 85px;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 
 <body class="results-page auth-sidebar-page">
 
-  {% include 'partials/auth_sidebar.html' %}
-
-  <header class="navbar results-navbar">
-
-    <a class="brand"
-       href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">
-
-      <span class="brand-mark" aria-hidden="true">
-
-        <svg viewBox="0 0 48 48" role="img" focusable="false">
-          <rect x="10" y="6" width="28" height="36" rx="4"></rect>
-          <path d="M16 14h16M16 21h16M16 28h8"></path>
-          <path d="m28 30 3 3 6-7"></path>
-        </svg>
-
-      </span>
-
-      <span>Live SRC Voting System</span>
-
-    </a>
-
-    <nav class="navbar-right" aria-label="Results navigation">
-
-      {% if request.user.is_staff %}
-
-      <a href="{% url 'admin_dashboard' %}" class="back-link">
-        Admin Dashboard
-      </a>
-
-      {% else %}
-
-      <a href="{% url 'dashboard' %}" class="back-link">
-        Student Dashboard
-      </a>
-
-      {% endif %}
-
-      <a href="{% url 'logout' %}" class="logout">
-        Logout
-      </a>
-
-    </nav>
-
-  </header>
+    {% include 'partials/auth_sidebar.html' %}
 
 
-  <main class="container results-container">
+    <header class="navbar results-navbar">
 
-    <section class="page-header results-page-header"
-             aria-labelledby="results-title">
+        <a
+            class="brand"
+            href="{% if request.user.is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}"
+        >
 
-      <p class="eyebrow">
-        Election transparency
-      </p>
+            <span class="brand-mark" aria-hidden="true">
 
-      <h1 id="results-title">
-        Election Results
-      </h1>
+                <svg
+                    viewBox="0 0 48 48"
+                    role="img"
+                    focusable="false"
+                >
 
-      <p>
-        View live results for all SRC elections.
-      </p>
+                    <rect
+                        x="10"
+                        y="6"
+                        width="28"
+                        height="36"
+                        rx="4"
+                    ></rect>
 
-    </section>
+                    <path d="M16 14h16M16 21h16M16 28h8"></path>
 
+                    <path d="m28 30 3 3 6-7"></path>
 
-    {% if messages %}
+                </svg>
 
-    <section class="messages" aria-live="polite">
+            </span>
 
-      {% for message in messages %}
+            <span>
+                Live SRC Voting System
+            </span>
 
-      <div class="message message-{{ message.tags }}">
-        {{ message }}
-      </div>
-
-      {% endfor %}
-
-    </section>
-
-    {% endif %}
-
-
-    {% if elections %}
-
-    <section class="results-list" aria-label="Election results">
+        </a>
 
 
-      {% for election_data in elections %}
+        <nav
+            class="navbar-right"
+            aria-label="Results navigation"
+        >
 
-      <article class="election-results">
+            {% if request.user.is_staff %}
 
-        <header class="election-header">
+                <a
+                    href="{% url 'admin_dashboard' %}"
+                    class="back-link"
+                >
+                    Admin Dashboard
+                </a>
 
-          <div>
+            {% else %}
 
-            <p class="election-label">
-              SRC election
+                <a
+                    href="{% url 'dashboard' %}"
+                    class="back-link"
+                >
+                    Student Dashboard
+                </a>
+
+            {% endif %}
+
+
+            <a
+                href="{% url 'logout' %}"
+                class="logout"
+            >
+                Logout
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <main class="container results-container">
+
+
+        <!-- ==========================================
+             PAGE HEADER
+             ========================================== -->
+
+        <section
+            class="page-header results-page-header"
+            aria-labelledby="results-title"
+        >
+
+            <p class="eyebrow">
+                Election transparency
             </p>
 
-            <h2>
-              {{ election_data.election.title }}
-            </h2>
+            <h1 id="results-title">
+                Election Results
+            </h1>
 
-          </div>
+            <p>
+                View live results for all SRC elections.
+            </p>
 
-          <span class="status-badge status-{{ election_data.election.status|lower }}">
+        </section>
 
-            {{ election_data.election.get_status_display }}
 
-          </span>
+        <!-- ==========================================
+             MESSAGES
+             ========================================== -->
 
-        </header>
+        {% if messages %}
 
+            <section
+                class="messages"
+                aria-live="polite"
+            >
 
-        <div class="election-body">
+                {% for message in messages %}
 
-          <p class="election-description">
-            {{ election_data.election.description }}
-          </p>
-
-
-          <div class="election-dates">
-
-            <span>
-              <strong>Start</strong>
-              {{ election_data.election.start_date }}
-            </span>
-
-            <span>
-              <strong>End</strong>
-              {{ election_data.election.end_date }}
-            </span>
-
-            <span>
-              <strong>Election type</strong>
-              {{ election_data.election.get_election_type_display }}
-            </span>
-
-            {% if election_data.election.campus %}
-
-            <span>
-              <strong>Campus</strong>
-              {{ election_data.election.campus }}
-            </span>
-
-            {% endif %}
-
-          </div>
-
-
-          <div class="results-content">
-
-
-            {% if election_data.election.status == 'OPEN' %}
-
-            <div class="result-notice notice-open" role="status">
-
-              <span class="notice-icon" aria-hidden="true">
-                !
-              </span>
-
-              <span>
-                Voting is still in progress. Results are preliminary.
-              </span>
-
-            </div>
-
-
-            {% elif election_data.election.status == 'SCHEDULED' %}
-
-            <div class="result-notice notice-scheduled" role="status">
-
-              <span class="notice-icon" aria-hidden="true">
-                i
-              </span>
-
-              <span>
-                Election is scheduled. Voting has not started yet.
-              </span>
-
-            </div>
-
-            {% elif election_data.election.status == 'CLOSED' %}
-
-            <div class="result-notice notice-closed" role="status">
-
-              <span class="notice-icon" aria-hidden="true">
-                ✓
-              </span>
-
-              <span>
-                Voting has closed. These are the final election results.
-              </span>
-
-            </div>
-
-            {% endif %}
-
-
-
-            {% if election_data.election.status != 'SCHEDULED' %}
-
-
-            <!-- ================================================= -->
-            <!-- INSTITUTIONAL SRC -->
-            <!-- ================================================= -->
-
-            <section class="result-group"
-                     aria-labelledby="institutional-{{ election_data.election.id }}">
-
-              <div class="result-group-heading">
-
-                <div>
-
-                  <p class="eyebrow">
-                    Institutional division
-                  </p>
-
-                  <h3 id="institutional-{{ election_data.election.id }}">
-                    Institutional SRC
-                  </h3>
-
-                  <p>
-                    Institutional SRC Election Results
-                  </p>
-
-                </div>
-
-
-                <span class="group-icon icon-primary"
-                      aria-hidden="true">
-
-                  <svg viewBox="0 0 24 24"
-                       role="img"
-                       focusable="false">
-
-                    <path d="M4 19V5M4 19h17"></path>
-
-                    <path d="m7 15 4-4 3 2 5-6"></path>
-
-                  </svg>
-
-                </span>
-
-              </div>
-
-
-              {% if election_data.institutional_results %}
-
-              <div class="candidate-list">
-
-                {% for result in election_data.institutional_results %}
-
-                <article class="candidate-result {% if result.is_winner %}winner{% endif %}">
-
-                  <div class="candidate-info">
-
-                    {% if result.candidate.image %}
-
-                    <img src="{{ result.candidate.image.url }}"
-                         alt="{{ result.candidate.name }}"
-                         class="candidate-image">
-
-                    {% else %}
-
-                    <div class="candidate-image-placeholder"
-                         aria-hidden="true">
-
-                      <svg viewBox="0 0 24 24"
-                           role="img"
-                           focusable="false">
-
-                        <circle cx="12" cy="8" r="3"></circle>
-
-                        <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
-
-                      </svg>
-
+                    <div class="message message-{{ message.tags }}">
+                        {{ message }}
                     </div>
-
-                    {% endif %}
-
-
-                    <div class="candidate-copy">
-
-                      <h4 class="candidate-name">
-                        {{ result.candidate.name }}
-                      </h4>
-
-                      <p class="candidate-type">
-                        {{ result.candidate.get_candidate_type_display }}
-                      </p>
-
-                    </div>
-
-
-                    {% if result.is_winner %}
-
-                    <span class="winner-badge">
-                      Leading
-                    </span>
-
-                    {% endif %}
-
-                  </div>
-
-
-                  <div class="vote-summary">
-
-                    <strong>
-                      {{ result.vote_count }}
-                    </strong>
-
-                    <span>
-                      vote{{ result.vote_count|pluralize }}
-                    </span>
-
-                    <span class="percentage">
-                      {{ result.percentage }}%
-                    </span>
-
-                  </div>
-
-
-                  <div class="progress-bar-container"
-                       aria-label="{{ result.percentage }} percent">
-
-                    <div class="progress-bar"
-                         style="--progress-width: {{ result.percentage }}%; width: var(--progress-width);">
-
-                    </div>
-
-                  </div>
-
-                </article>
 
                 {% endfor %}
 
-              </div>
+            </section>
+
+        {% endif %}
 
 
-              <p class="total-votes">
+        <!-- ==========================================
+             ELECTION RESULTS
+             ========================================== -->
 
-                Total Institutional SRC Votes:
+        {% if elections %}
 
-                <strong>
-                  {{ election_data.institutional_total_votes }}
-                </strong>
+            <section
+                class="results-list"
+                aria-label="Election results"
+            >
 
-              </p>
+
+                {% for election_data in elections %}
+
+                    <article class="election-results">
 
 
-              {% else %}
+                        <!-- ==========================================
+                             ELECTION HEADER
+                             ========================================== -->
 
-              <p class="empty-results">
-                No Institutional SRC votes have been recorded yet.
-              </p>
+                        <header class="election-header">
 
-              {% endif %}
+                            <div>
+
+                                <!-- Election Logo -->
+
+                                {% if election_data.election.logo %}
+
+                                    <div class="results-election-logo-container">
+
+                                        <img
+                                            src="{{ election_data.election.logo.url }}"
+                                            alt="{{ election_data.election.title }} logo"
+                                            class="results-election-logo"
+                                        >
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <p class="election-label">
+                                    SRC election
+                                </p>
+
+
+                                <h2>
+                                    {{ election_data.election.title }}
+                                </h2>
+
+                            </div>
+
+
+                            <span
+                                class="status-badge status-{{ election_data.election.status|lower }}"
+                            >
+                                {{ election_data.election.get_status_display }}
+                            </span>
+
+                        </header>
+
+
+                        <!-- ==========================================
+                             ELECTION BODY
+                             ========================================== -->
+
+                        <div class="election-body">
+
+
+                            <p class="election-description">
+                                {{ election_data.election.description }}
+                            </p>
+
+
+                            <!-- Election Dates -->
+
+                            <div class="election-dates">
+
+                                <span>
+
+                                    <strong>
+                                        Start
+                                    </strong>
+
+                                    {{ election_data.election.start_date }}
+
+                                </span>
+
+
+                                <span>
+
+                                    <strong>
+                                        End
+                                    </strong>
+
+                                    {{ election_data.election.end_date }}
+
+                                </span>
+
+
+                                <span>
+
+                                    <strong>
+                                        Election type
+                                    </strong>
+
+                                    {{ election_data.election.get_election_type_display }}
+
+                                </span>
+
+
+                                {% if election_data.election.campus %}
+
+                                    <span>
+
+                                        <strong>
+                                            Campus
+                                        </strong>
+
+                                        {{ election_data.election.campus }}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- ==========================================
+                                 RESULTS CONTENT
+                                 ========================================== -->
+
+                            <div class="results-content">
+
+
+                                <!-- ==========================================
+                                     OPEN ELECTION
+                                     ========================================== -->
+
+                                {% if election_data.election.status == 'OPEN' %}
+
+                                    <div
+                                        class="result-notice notice-open"
+                                        role="status"
+                                    >
+
+                                        <span
+                                            class="notice-icon"
+                                            aria-hidden="true"
+                                        >
+                                            !
+                                        </span>
+
+                                        <span>
+                                            Voting is still in progress.
+                                            Results are preliminary.
+                                        </span>
+
+                                    </div>
+
+
+                                <!-- ==========================================
+                                     SCHEDULED ELECTION
+                                     ========================================== -->
+
+                                {% elif election_data.election.status == 'SCHEDULED' %}
+
+                                    <div
+                                        class="result-notice notice-scheduled"
+                                        role="status"
+                                    >
+
+                                        <span
+                                            class="notice-icon"
+                                            aria-hidden="true"
+                                        >
+                                            i
+                                        </span>
+
+                                        <span>
+                                            Election is scheduled.
+                                            Voting has not started yet.
+                                        </span>
+
+                                    </div>
+
+
+                                <!-- ==========================================
+                                     CLOSED ELECTION
+                                     ========================================== -->
+
+                                {% elif election_data.election.status == 'CLOSED' %}
+
+                                    <div
+                                        class="result-notice notice-closed"
+                                        role="status"
+                                    >
+
+                                        <span
+                                            class="notice-icon"
+                                            aria-hidden="true"
+                                        >
+                                            ✓
+                                        </span>
+
+                                        <span>
+                                            Voting has closed.
+                                            These are the final election results.
+                                        </span>
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                {% if election_data.election.status != 'SCHEDULED' %}
+
+
+                                    <!-- ==========================================
+                                         INSTITUTIONAL SRC
+                                         ========================================== -->
+
+                                    <section
+                                        class="result-group"
+                                        aria-labelledby="institutional-{{ election_data.election.id }}"
+                                    >
+
+                                        <div class="result-group-heading">
+
+                                            <div>
+
+                                                <p class="eyebrow">
+                                                    Institutional division
+                                                </p>
+
+                                                <h3
+                                                    id="institutional-{{ election_data.election.id }}"
+                                                >
+                                                    Institutional SRC
+                                                </h3>
+
+                                                <p>
+                                                    Institutional SRC Election Results
+                                                </p>
+
+                                            </div>
+
+
+                                            <span
+                                                class="group-icon icon-primary"
+                                                aria-hidden="true"
+                                            >
+
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    role="img"
+                                                    focusable="false"
+                                                >
+
+                                                    <path d="M4 19V5M4 19h17"></path>
+
+                                                    <path d="m7 15 4-4 3 2 5-6"></path>
+
+                                                </svg>
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if election_data.institutional_results %}
+
+                                            <div class="candidate-list">
+
+
+                                                {% for result in election_data.institutional_results %}
+
+                                                    <article
+                                                        class="candidate-result {% if result.is_winner %}winner{% endif %}"
+                                                    >
+
+                                                        <div class="candidate-info">
+
+
+                                                            {% if result.candidate.image %}
+
+                                                                <img
+                                                                    src="{{ result.candidate.image.url }}"
+                                                                    alt="{{ result.candidate.name }}"
+                                                                    class="candidate-image"
+                                                                >
+
+                                                            {% else %}
+
+                                                                <div
+                                                                    class="candidate-image-placeholder"
+                                                                    aria-hidden="true"
+                                                                >
+
+                                                                    <svg
+                                                                        viewBox="0 0 24 24"
+                                                                        role="img"
+                                                                        focusable="false"
+                                                                    >
+
+                                                                        <circle
+                                                                            cx="12"
+                                                                            cy="8"
+                                                                            r="3"
+                                                                        ></circle>
+
+                                                                        <path
+                                                                            d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"
+                                                                        ></path>
+
+                                                                    </svg>
+
+                                                                </div>
+
+                                                            {% endif %}
+
+
+                                                            <div class="candidate-copy">
+
+                                                                <h4 class="candidate-name">
+                                                                    {{ result.candidate.name }}
+                                                                </h4>
+
+                                                                <p class="candidate-type">
+                                                                    {{ result.candidate.get_candidate_type_display }}
+                                                                </p>
+
+                                                            </div>
+
+
+                                                            {% if result.is_winner %}
+
+                                                                <span class="winner-badge">
+                                                                    Leading
+                                                                </span>
+
+                                                            {% endif %}
+
+                                                        </div>
+
+
+                                                        <div class="vote-summary">
+
+                                                            <strong>
+                                                                {{ result.vote_count }}
+                                                            </strong>
+
+                                                            <span>
+                                                                vote{{ result.vote_count|pluralize }}
+                                                            </span>
+
+                                                            <span class="percentage">
+                                                                {{ result.percentage }}%
+                                                            </span>
+
+                                                        </div>
+
+
+                                                        <div
+                                                            class="progress-bar-container"
+                                                            aria-label="{{ result.percentage }} percent"
+                                                        >
+
+                                                            <div
+                                                                class="progress-bar"
+                                                                style="--progress-width: {{ result.percentage }}%; width: var(--progress-width);"
+                                                            ></div>
+
+                                                        </div>
+
+                                                    </article>
+
+                                                {% endfor %}
+
+                                            </div>
+
+
+                                            <p class="total-votes">
+
+                                                Total Institutional SRC Votes:
+
+                                                <strong>
+                                                    {{ election_data.institutional_total_votes }}
+                                                </strong>
+
+                                            </p>
+
+
+                                        {% else %}
+
+                                            <p class="empty-results">
+                                                No Institutional SRC votes have been recorded yet.
+                                            </p>
+
+                                        {% endif %}
+
+                                    </section>
+
+
+                                    <!-- ==========================================
+                                         CAMPUS SRC
+                                         ========================================== -->
+
+                                    <section
+                                        class="result-group"
+                                        aria-labelledby="campus-{{ election_data.election.id }}"
+                                    >
+
+                                        <div class="result-group-heading">
+
+                                            <div>
+
+                                                <p class="eyebrow">
+                                                    Campus division
+                                                </p>
+
+                                                <h3
+                                                    id="campus-{{ election_data.election.id }}"
+                                                >
+                                                    Campus SRC
+                                                </h3>
+
+                                                <p>
+                                                    Campus SRC Election Results
+                                                </p>
+
+                                            </div>
+
+
+                                            <span
+                                                class="group-icon icon-success"
+                                                aria-hidden="true"
+                                            >
+
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    role="img"
+                                                    focusable="false"
+                                                >
+
+                                                    <path d="M4 5h16v14H4zM8 9h8M8 13h5"></path>
+
+                                                    <path d="m14 16 2 2 4-5"></path>
+
+                                                </svg>
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if election_data.campus_results %}
+
+
+                                            {% for campus_data in election_data.campus_results %}
+
+
+                                                <!-- Campus Name -->
+
+                                                <div class="campus-result-section">
+
+                                                    <h4 class="campus-result-title">
+                                                        {{ campus_data.campus }}
+                                                    </h4>
+
+
+                                                    {% if campus_data.results %}
+
+
+                                                        <div class="candidate-list">
+
+
+                                                            {% for result in campus_data.results %}
+
+                                                                <article
+                                                                    class="candidate-result {% if result.is_winner %}winner{% endif %}"
+                                                                >
+
+                                                                    <div class="candidate-info">
+
+
+                                                                        {% if result.candidate.image %}
+
+                                                                            <img
+                                                                                src="{{ result.candidate.image.url }}"
+                                                                                alt="{{ result.candidate.name }}"
+                                                                                class="candidate-image"
+                                                                            >
+
+                                                                        {% else %}
+
+                                                                            <div
+                                                                                class="candidate-image-placeholder"
+                                                                                aria-hidden="true"
+                                                                            >
+
+                                                                                <svg
+                                                                                    viewBox="0 0 24 24"
+                                                                                    role="img"
+                                                                                    focusable="false"
+                                                                                >
+
+                                                                                    <circle
+                                                                                        cx="12"
+                                                                                        cy="8"
+                                                                                        r="3"
+                                                                                    ></circle>
+
+                                                                                    <path
+                                                                                        d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"
+                                                                                    ></path>
+
+                                                                                </svg>
+
+                                                                            </div>
+
+                                                                        {% endif %}
+
+
+                                                                        <div class="candidate-copy">
+
+                                                                            <h4 class="candidate-name">
+                                                                                {{ result.candidate.name }}
+                                                                            </h4>
+
+                                                                            <p class="candidate-type">
+                                                                                {{ result.candidate.get_candidate_type_display }}
+                                                                            </p>
+
+                                                                        </div>
+
+
+                                                                        {% if result.is_winner %}
+
+                                                                            <span class="winner-badge">
+                                                                                Leading
+                                                                            </span>
+
+                                                                        {% endif %}
+
+                                                                    </div>
+
+
+                                                                    <div class="vote-summary">
+
+                                                                        <strong>
+                                                                            {{ result.vote_count }}
+                                                                        </strong>
+
+                                                                        <span>
+                                                                            vote{{ result.vote_count|pluralize }}
+                                                                        </span>
+
+                                                                        <span class="percentage">
+                                                                            {{ result.percentage }}%
+                                                                        </span>
+
+                                                                    </div>
+
+
+                                                                    <div
+                                                                        class="progress-bar-container"
+                                                                        aria-label="{{ result.percentage }} percent"
+                                                                    >
+
+                                                                        <div
+                                                                            class="progress-bar"
+                                                                            style="--progress-width: {{ result.percentage }}%; width: var(--progress-width);"
+                                                                        ></div>
+
+                                                                    </div>
+
+                                                                </article>
+
+                                                            {% endfor %}
+
+                                                        </div>
+
+
+                                                        <p class="total-votes">
+
+                                                            Total
+                                                            {{ campus_data.campus }}
+                                                            Campus SRC Votes:
+
+                                                            <strong>
+                                                                {{ campus_data.total_votes }}
+                                                            </strong>
+
+                                                        </p>
+
+
+                                                    {% else %}
+
+                                                        <p class="empty-results">
+                                                            No Campus SRC votes have been recorded yet.
+                                                        </p>
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% endfor %}
+
+
+                                        {% else %}
+
+                                            <p class="empty-results">
+                                                No Campus SRC votes have been recorded yet.
+                                            </p>
+
+                                        {% endif %}
+
+                                    </section>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
 
             </section>
 
 
+        {% else %}
 
-            <!-- ================================================= -->
-            <!-- CAMPUS SRC -->
-            <!-- ================================================= -->
 
-            <section class="result-group"
-                     aria-labelledby="campus-{{ election_data.election.id }}">
+            <!-- ==========================================
+                 NO RESULTS
+                 ========================================== -->
 
-              <div class="result-group-heading">
+            <section class="no-results">
 
-                <div>
+                <div
+                    class="empty-icon"
+                    aria-hidden="true"
+                >
 
-                  <p class="eyebrow">
-                    Campus division
-                  </p>
+                    <svg
+                        viewBox="0 0 24 24"
+                        role="img"
+                        focusable="false"
+                    >
 
-                  <h3 id="campus-{{ election_data.election.id }}">
-                    Campus SRC
-                  </h3>
+                        <path
+                            d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"
+                        ></path>
 
-                  <p>
-                    Campus SRC Election Results
-                  </p>
+                    </svg>
 
                 </div>
 
 
-                <span class="group-icon icon-success"
-                      aria-hidden="true">
+                <h3>
+                    No elections available
+                </h3>
 
-                  <svg viewBox="0 0 24 24"
-                       role="img"
-                       focusable="false">
 
-                    <path d="M4 5h16v14H4zM8 9h8M8 13h5"></path>
-
-                    <path d="m14 16 2 2 4-5"></path>
-
-                  </svg>
-
-                </span>
-
-              </div>
-
-
-              {% if election_data.campus_results %}
-
-
-              {% for campus_data in election_data.campus_results %}
-
-
-              <!-- =============================== -->
-              <!-- CAMPUS NAME -->
-              <!-- =============================== -->
-
-              <div class="campus-result-section">
-
-                <h4 class="campus-result-title">
-                  {{ campus_data.campus }}
-                </h4>
-
-
-                {% if campus_data.results %}
-
-
-                <div class="candidate-list">
-
-
-                  {% for result in campus_data.results %}
-
-
-                  <article class="candidate-result {% if result.is_winner %}winner{% endif %}">
-
-
-                    <div class="candidate-info">
-
-
-                      {% if result.candidate.image %}
-
-                      <img src="{{ result.candidate.image.url }}"
-                           alt="{{ result.candidate.name }}"
-                           class="candidate-image">
-
-                      {% else %}
-
-                      <div class="candidate-image-placeholder"
-                           aria-hidden="true">
-
-                        <svg viewBox="0 0 24 24"
-                             role="img"
-                             focusable="false">
-
-                          <circle cx="12"
-                                  cy="8"
-                                  r="3"></circle>
-
-                          <path d="M5 20c.8-3.4 3.1-5 7-5s6.2 1.6 7 5"></path>
-
-                        </svg>
-
-                      </div>
-
-                      {% endif %}
-
-
-                      <div class="candidate-copy">
-
-                        <h4 class="candidate-name">
-                          {{ result.candidate.name }}
-                        </h4>
-
-                        <p class="candidate-type">
-                          {{ result.candidate.get_candidate_type_display }}
-                        </p>
-
-                      </div>
-
-
-                      {% if result.is_winner %}
-
-                      <span class="winner-badge">
-                        Leading
-                      </span>
-
-                      {% endif %}
-
-                    </div>
-
-
-                    <div class="vote-summary">
-
-                      <strong>
-                        {{ result.vote_count }}
-                      </strong>
-
-                      <span>
-                        vote{{ result.vote_count|pluralize }}
-                      </span>
-
-                      <span class="percentage">
-                        {{ result.percentage }}%
-                      </span>
-
-                    </div>
-
-
-                    <div class="progress-bar-container"
-                         aria-label="{{ result.percentage }} percent">
-
-                      <div class="progress-bar"
-                          style="--progress-width: {{ result.percentage }}%; width: var(--progress-width);">
-
-                      </div>
-
-                    </div>
-
-
-                  </article>
-
-
-                  {% endfor %}
-
-
-                </div>
-
-
-                <p class="total-votes">
-
-                  Total {{ campus_data.campus }} Campus SRC Votes:
-
-                  <strong>
-                    {{ campus_data.total_votes }}
-                  </strong>
-
+                <p>
+                    There are currently no elections to display results for.
                 </p>
-
-
-                {% else %}
-
-                <p class="empty-results">
-                  No Campus SRC votes have been recorded yet.
-                </p>
-
-                {% endif %}
-
-
-              </div>
-
-
-              {% endfor %}
-
-
-              {% else %}
-
-              <p class="empty-results">
-                No Campus SRC votes have been recorded yet.
-              </p>
-
-              {% endif %}
 
             </section>
 
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- ==========================================
+         AUTO REFRESH LIVE RESULTS
+         ========================================== -->
+
+    {% if elections %}
+
+        {% for election_data in elections %}
+
+            {% if election_data.election.status == 'OPEN' %}
+
+                <script>
+
+                    setTimeout(
+                        function() {
+
+                            window.location.reload();
+
+                        },
+                        5000
+                    );
+
+                </script>
 
             {% endif %}
 
-          </div>
-
-        </div>
-
-      </article>
-
-      {% endfor %}
-
-    </section>
-
-
-    {% else %}
-
-
-    <section class="no-results">
-
-      <div class="empty-icon"
-           aria-hidden="true">
-
-        <svg viewBox="0 0 24 24"
-             role="img"
-             focusable="false">
-
-          <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
-
-        </svg>
-
-      </div>
-
-      <h3>
-        No elections available
-      </h3>
-
-      <p>
-        There are currently no elections to display results for.
-      </p>
-
-    </section>
-
+        {% endfor %}
 
     {% endif %}
 
-  </main>
 
-
-  <!-- ===================================================== -->
-  <!-- AUTO REFRESH LIVE RESULTS -->
-  <!-- ===================================================== -->
-
-  {% if elections %}
-
-  {% for election_data in elections %}
-
-  {% if election_data.election.status == 'OPEN' %}
-
-  <script>
-
-    setTimeout(function() {
-      window.location.reload();
-    }, 5000);
-
-  </script>
-
-  {% endif %}
-
-  {% endfor %}
-
-  {% endif %}
-
-
-  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+    <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
 
 </body>
 

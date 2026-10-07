@@ -13,6 +13,7 @@
 
 <body class="manage-elections-page auth-sidebar-page">
   {% include 'partials/auth_sidebar.html' %}
+
   <header class="navbar manage-elections-navbar">
     <a class="brand" href="{% url 'admin_dashboard' %}">
       <span class="brand-mark" aria-hidden="true">
@@ -32,6 +33,18 @@
   </header>
 
   <main class="container manage-elections-container">
+
+    <!-- Django notification messages -->
+    {% if messages %}
+    <section class="messages" aria-live="polite">
+      {% for message in messages %}
+      <div class="message message-{{ message.tags }}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
     <section class="page-heading manage-elections-hero" aria-labelledby="manage-elections-title">
       <div>
         <p class="eyebrow">Election administration</p>
@@ -47,19 +60,25 @@
 
     {% if elections %}
     <section class="election-list manage-elections-list" aria-label="Election list">
+
       {% for election in elections %}
       <article class="election-card">
+
         <div class="election-topline">
           <div>
             <p class="election-label">Election record</p>
             <h2>{{ election.title }}</h2>
           </div>
-          <span class="status status-{{ election.status|lower }}">{{ election.status }}</span>
+
+          <span class="status status-{{ election.status|lower }}">
+            {{ election.status }}
+          </span>
         </div>
 
         <p class="description">{{ election.description }}</p>
 
         <div class="details">
+
           <div class="detail-item">
             <span class="detail-label">Start</span>
             <strong>{{ election.start_date }}</strong>
@@ -81,49 +100,94 @@
             <strong>{{ election.campus }}</strong>
           </div>
           {% endif %}
+
         </div>
 
         <div class="actions" aria-label="Actions for {{ election.title }}">
-          <a href="{% url 'edit_election' election.id %}" class="action-button edit-button">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+
+          <a href="{% url 'edit_election' election.id %}"
+             class="action-button edit-button">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true"
+                 focusable="false">
+
               <path d="m14 5 5 5"></path>
               <path d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0-3-3L5 17v3Z"></path>
+
             </svg>
+
             Edit
           </a>
 
-          <a href="{% url 'delete_election' election.id %}" class="action-button delete-button">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <a href="{% url 'delete_election' election.id %}"
+             class="action-button delete-button">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true"
+                 focusable="false">
+
               <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path>
+
             </svg>
+
             Delete
           </a>
 
-          <a href="#" class="action-button candidates-button">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <a href="#"
+             class="action-button candidates-button">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true"
+                 focusable="false">
+
               <circle cx="9" cy="8" r="3"></circle>
+
               <path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5M16 7a3 3 0 0 1 0 6M16 14c2.6.2 4.1 1.8 4.5 5"></path>
+
             </svg>
+
             Manage Candidates
           </a>
+
         </div>
+
       </article>
       {% endfor %}
+
     </section>
+
     {% else %}
+
     <section class="empty-state manage-elections-empty">
+
       <div class="empty-icon" aria-hidden="true">
+
         <svg viewBox="0 0 24 24" focusable="false">
           <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h4"></path>
         </svg>
+
       </div>
+
       <h2>No elections found</h2>
+
       <p>There are currently no elections in the system.</p>
-      <a href="{% url 'create_election' %}" class="create-button">Create Your First Election</a>
+
+      <a href="{% url 'create_election' %}"
+         class="create-button">
+
+        Create Your First Election
+
+      </a>
+
     </section>
+
     {% endif %}
+
   </main>
-<script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
+  <script src="{% static 'voting/js/auth_sidebar.js' %}"></script>
+
 </body>
 
 </html>

@@ -42,6 +42,14 @@
     </section>
     {% endif %}
 
+    {% if error %}
+    <section class="messages" aria-live="polite">
+      <div class="message message-error">
+    {{ error }}
+      </div>
+    </section>
+   {% endif %}
+
     <section class="form-card" aria-labelledby="import-students-title">
       <div class="form-intro">
         <span class="title-icon" aria-hidden="true">

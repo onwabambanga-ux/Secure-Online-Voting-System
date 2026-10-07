@@ -65,8 +65,7 @@ class Election(models.Model):
     ]
 
     ELECTION_TYPE_CHOICES = [
-         ('NORMAL', 'Normal Election'),
-
+        ('NORMAL', 'Normal Election'),
         ('RUNOFF', 'Runoff'),
     ]
 
@@ -75,6 +74,14 @@ class Election(models.Model):
     )
 
     description = models.TextField()
+
+    # Optional logo for the election.
+    # The logo will be stored using Cloudinary.
+    logo = models.ImageField(
+        upload_to='election_logos/',
+        blank=True,
+        null=True
+    )
 
     election_type = models.CharField(
         max_length=20,
@@ -105,9 +112,13 @@ class Election(models.Model):
 
         now = timezone.now()
 
-        if self.status in ['DRAFT', 'RESULTS']:
+        # These statuses are final/manual states.
+        # They must not be changed automatically.
+        if self.status in ['DRAFT', 'CLOSED', 'RESULTS']:
             return
 
+        # Only SCHEDULED and OPEN elections are
+        # automatically updated according to their dates.
         if now < self.start_date:
             new_status = 'SCHEDULED'
 
