@@ -1288,13 +1288,15 @@ def delete_election(request, election_id):
 
 @login_required(login_url='login')
 @login_required(login_url='login')
+
 def import_students(request):
+
     if not request.user.is_authenticated:
         return redirect('login')
 
     if not request.user.is_staff:
         return redirect('dashboard')
-    
+
     # Do not allow importing students while an election
     # is scheduled or currently open.
     elections = Election.objects.all()
@@ -1331,29 +1333,23 @@ def import_students(request):
             excel_file = request.FILES['excel_file']
 
             try:
-                # ---------------------------------------------
-                # Read Excel file
-                # ---------------------------------------------
-
+                # Read Excel file.
                 df = pd.read_excel(
                     excel_file,
                     dtype={'Student Number': str}
                 )
 
-                # ---------------------------------------------
-                # Required columns
-                # ---------------------------------------------
-
+                # Required columns.
                 required_columns = [
                     'Student Number',
-                    'Full Name',
+                    'Name',
+                    'Surname',
                     'Campus',
                     'Faculty'
                 ]
 
                 missing_columns = [
-                    col
-                    for col in required_columns
+                    col for col in required_columns
                     if col not in df.columns
                 ]
 
@@ -1370,52 +1366,38 @@ def import_students(request):
                         {'form': form}
                     )
 
-                # ---------------------------------------------
-                # Counters and error tracking
-                # ---------------------------------------------
-
+                # Counters and error tracking.
                 success_count = 0
                 error_count = 0
                 errors = []
 
-                # Track duplicate student numbers
-                # within this Excel file.
+                # Track duplicate student numbers in this file.
                 seen_student_numbers = set()
 
-                # ---------------------------------------------
-                # Allowed campuses
-                # ---------------------------------------------
-
+                # Allowed campuses.
                 allowed_campuses = [
                     'Alice Campus',
                     'East London Campus'
                 ]
 
-                # ---------------------------------------------
-                # Process each student
-                # ---------------------------------------------
-
+                # Process each student.
                 for index, row in df.iterrows():
 
                     try:
-                        # -----------------------------------------
-                        # Read Student Number
-                        # -----------------------------------------
-
+                        # Read Student Number.
                         student_number = str(
                             row['Student Number']
                         ).strip()
 
-                        # Check for empty student number
-                        if not student_number or student_number.lower() == 'nan':
+                        if (
+                            not student_number
+                            or student_number.lower() == 'nan'
+                        ):
                             raise ValueError(
                                 'Student Number cannot be empty.'
                             )
 
-                        # -----------------------------------------
-                        # Check for duplicate student number
-                        # -----------------------------------------
-
+                        # Check for duplicate student number.
                         if student_number in seen_student_numbers:
                             raise ValueError(
                                 f'Duplicate student number '
@@ -1424,36 +1406,32 @@ def import_students(request):
 
                         seen_student_numbers.add(student_number)
 
-                        # -----------------------------------------
-                        # Read Full Name
-                        # -----------------------------------------
+                        # Read Name and Surname separately.
+                        name = str(row['Name']).strip()
+                        surname = str(row['Surname']).strip()
 
-                        full_name = str(
-                            row['Full Name']
-                        ).strip()
-
-                        if not full_name or full_name.lower() == 'nan':
+                        if not name or name.lower() == 'nan':
                             raise ValueError(
-                                'Full Name cannot be empty.'
+                                'Name cannot be empty.'
                             )
 
-                        # -----------------------------------------
-                        # Read Campus
-                        # -----------------------------------------
+                        if not surname or surname.lower() == 'nan':
+                            raise ValueError(
+                                'Surname cannot be empty.'
+                            )
 
-                        campus = str(
-                            row['Campus']
-                        ).strip()
+                        # Maintain compatibility with existing code.
+                        full_name = f'{name} {surname}'.strip()
+
+                        # Read Campus.
+                        campus = str(row['Campus']).strip()
 
                         if not campus or campus.lower() == 'nan':
                             raise ValueError(
                                 'Campus cannot be empty.'
                             )
 
-                        # -----------------------------------------
-                        # Validate Campus
-                        # -----------------------------------------
-
+                        # Validate Campus.
                         if campus not in allowed_campuses:
                             raise ValueError(
                                 f'Invalid campus "{campus}". '
@@ -1461,55 +1439,31 @@ def import_students(request):
                                 f'{", ".join(allowed_campuses)}'
                             )
 
-                        # -----------------------------------------
-                        # Read Faculty
-                        # -----------------------------------------
-
-                        faculty = str(
-                            row['Faculty']
-                        ).strip()
+                        # Read Faculty.
+                        faculty = str(row['Faculty']).strip()
 
                         if not faculty or faculty.lower() == 'nan':
                             raise ValueError(
                                 'Faculty cannot be empty.'
                             )
 
-                        # -----------------------------------------
-                        # Read registration status
-                        # -----------------------------------------
-
+                        # Read registration status.
                         registered_value = row.get(
                             'Registered',
                             'TRUE'
                         )
 
                         registered = (
-                            str(
-                                registered_value
-                            ).upper().strip()
-                            in [
-                                'TRUE',
-                                'YES',
-                                '1',
-                                'Y'
-                            ]
+                            str(registered_value).upper().strip()
+                            in ['TRUE', 'YES', '1', 'Y']
                         )
 
-                        # -----------------------------------------
-                        # Read account status
-                        # -----------------------------------------
-
+                        # Read account status.
                         account_status = str(
-                            row.get(
-                                'Account Status',
-                                'ACTIVE'
-                            )
+                            row.get('Account Status', 'ACTIVE')
                         ).upper().strip()
 
-                        # -----------------------------------------
-                        # Validate account status
-                        # -----------------------------------------
-
+                        # Validate account status.
                         if account_status not in [
                             'ACTIVE',
                             'SUSPENDED',
@@ -1522,26 +1476,20 @@ def import_students(request):
                                 f'ACTIVE, SUSPENDED, INACTIVE.'
                             )
 
-                        # -----------------------------------------
-                        # Calculate eligibility automatically
-                        #
-                        # Eligible =
-                        # Registered AND Account Status ACTIVE
-                        # -----------------------------------------
-
+                        # Calculate eligibility automatically.
+                        # Eligible = Registered AND Account Status ACTIVE.
                         eligible = (
                             registered
                             and account_status == 'ACTIVE'
                         )
 
-                        # -----------------------------------------
-                        # Create or update StudentProfile
-                        # -----------------------------------------
-
+                        # Create or update StudentProfile.
                         student, created = (
                             StudentProfile.objects.update_or_create(
                                 student_number=student_number,
                                 defaults={
+                                    'name': name,
+                                    'surname': surname,
                                     'full_name': full_name,
                                     'campus': campus,
                                     'faculty': faculty,
@@ -1561,10 +1509,7 @@ def import_students(request):
                             f'Row {index + 2}: {str(e)}'
                         )
 
-                # ---------------------------------------------
-                # Record import in audit log
-                # ---------------------------------------------
-
+                # Record import in audit log.
                 AuditLog.objects.create(
                     user=request.user,
                     action='IMPORT_STUDENTS',
@@ -1574,10 +1519,7 @@ def import_students(request):
                     )
                 )
 
-                # ---------------------------------------------
-                # Success message
-                # ---------------------------------------------
-
+                # Success message.
                 if success_count > 0:
                     messages.success(
                         request,
@@ -1585,10 +1527,7 @@ def import_students(request):
                         f'{success_count} students!'
                     )
 
-                # ---------------------------------------------
-                # Error message
-                # ---------------------------------------------
-
+                # Error message.
                 if error_count > 0:
                     messages.warning(
                         request,
@@ -1596,16 +1535,10 @@ def import_students(request):
                         f'Check the displayed errors for details.'
                     )
 
-                # ---------------------------------------------
-                # Display first five errors
-                # ---------------------------------------------
-
+                # Display first five errors.
                 if errors:
                     for error in errors[:5]:
-                        messages.error(
-                            request,
-                            error
-                        )
+                        messages.error(request, error)
 
                 return redirect('admin_dashboard')
 
@@ -1629,6 +1562,8 @@ def import_students(request):
         'voting/import_students.html',
         {'form': form}
     )
+
+
 @login_required(login_url='login')
 def view_audit_logs(request):
     if not request.user.is_authenticated:
@@ -1941,6 +1876,7 @@ def export_results_excel(request):
         engine='openpyxl'
     ) as writer:
 
+        # Export all four worksheets.
         summary_df.to_excel(
             writer,
             index=False,
@@ -1964,6 +1900,35 @@ def export_results_excel(request):
             index=False,
             sheet_name='Faculty Statistics'
         )
+
+        # Format every worksheet.
+        for worksheet in writer.sheets.values():
+
+            # Make every column at least approximately 32 pixels wide.
+            for column_cells in worksheet.columns:
+                column_letter = column_cells[0].column_letter
+
+                # Find the longest value in this column.
+                max_length = 0
+
+                for cell in column_cells:
+                    if cell.value is not None:
+                        max_length = max(
+                            max_length,
+                            len(str(cell.value))
+                        )
+
+                # Excel column width is measured in character units,
+                # not pixels. Width 5 is approximately 32–40 pixels.
+                worksheet.column_dimensions[
+                    column_letter
+                ].width = max(5, max_length + 2)
+
+            # Make headings bold and keep them visible while scrolling.
+            for cell in worksheet[1]:
+                cell.font = cell.font.copy(bold=True)
+
+            worksheet.freeze_panes = 'A2'
 
     return response
 

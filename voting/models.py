@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+
 class StudentProfile(models.Model):
 
     ACCOUNT_STATUS_CHOICES = [
@@ -24,6 +25,19 @@ class StudentProfile(models.Model):
         unique=True
     )
 
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        default=''
+    )
+
+    surname = models.CharField(
+        max_length=100,
+        blank=True,
+        default=''
+    )
+
+    # Kept for compatibility with existing project code.
     full_name = models.CharField(
         max_length=200
     )
@@ -50,8 +64,16 @@ class StudentProfile(models.Model):
         default='ACTIVE'
     )
 
+    def save(self, *args, **kwargs):
+        # Keep full_name consistent when name and surname are provided.
+        if self.name or self.surname:
+            self.full_name = f"{self.name} {self.surname}".strip()
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.student_number} - {self.full_name}"
+
 
 
 class Election(models.Model):
